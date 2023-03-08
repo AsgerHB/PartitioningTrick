@@ -168,6 +168,25 @@ function draw(policy::Function, x_min, x_max, y_min, y_max, G; colors=[:blue, :y
 			colorbar=nothing)
 end
 
+# ╔═╡ a68cfc1d-e3fd-43aa-8eea-97615713e0a4
+function draw_expected(regressors, action, x_min, x_max, y_min, y_max, G; plotargs...)
+	size_x, size_y = Int((x_max - x_min)/G), Int((y_max - y_min)/G)
+	matrix = Matrix(undef, size_x, size_y)
+	for i in 1:size_x
+		for j in 1:size_y
+			x, y = i*G - G + x_min, j*G - G + y_min
+
+			matrix[i, j] = get_predicted_outcome(regressors[action], (x, y))
+		end
+	end
+	x_tics = G+x_min:G:x_max
+	y_tics = G+y_min:G:y_max
+	
+	heatmap(x_tics, y_tics,
+		    transpose(matrix);
+			plotargs...)
+end
+
 # ╔═╡ 338a7dce-c680-421c-af11-716f6820e9b3
 begin
 	draw(test_policy, 0, 1.0, 0, 1.0, 0.01, 
@@ -179,6 +198,26 @@ begin
 		margin=2mm,
 		legend=:topleft)
 end
+
+# ╔═╡ f0806bbf-7a71-4d96-81dc-436d009cc9de
+draw_expected′(action, title) = 
+	draw_expected(jsondict["regressors"]["(1)"]["regressor"], action, 
+		0, 1, 
+		0, 1,
+		0.01,
+		xlabel="x",
+		ylabel="t",
+		colorbar_title="expected cost",
+		clims=(0, 20),
+		color=cgrad(:roma, 10, categorical=true, scale=:linear),
+		title=title,
+		legend=:topleft)
+
+# ╔═╡ 6dd7d4a4-e7df-4c82-bb48-edc0f8ff18ab
+draw_expected′("0", "slow")
+
+# ╔═╡ 14fe97ea-97fb-42bc-b0e3-4162b4a48b71
+draw_expected′("1", "fast")
 
 # ╔═╡ d3d9929d-7c09-428d-baba-3cc22bc11e12
 function sinus_fast(x) 
@@ -352,13 +391,16 @@ function draw_expected_discrete(regressors, action, x_min, x_max, y_min, y_max; 
 end
 
 # ╔═╡ b882f6ed-b9b7-41c3-9f32-5092db1b25f5
-draw_expected_discrete′(action, title) = draw_expected_discrete(jsondict2["regressors"], action, 0, index_max, 0, index_max,
-	xlabel="ix",
-	ylabel="it",
-	colorbar_title="expected cost",
-	color=cgrad(:roma, 10, categorical = true, scale = :exp),
-	title=title,
-	legend=:topleft)
+draw_expected_discrete′(action, title) = 
+	draw_expected_discrete(jsondict2["regressors"], action, 
+		0, index_max, 0, index_max,
+		xlabel="ix",
+		ylabel="it",
+		colorbar_title="expected cost",
+		clims=(0, 20),
+		color=cgrad(:roma, 10, categorical=true, scale=:linear),
+		title=title,
+		legend=:topleft)
 
 # ╔═╡ 0f841f27-8808-49ca-8af2-95afb0f09923
 draw_expected_discrete′("0", "slow")
@@ -1419,12 +1461,16 @@ version = "1.4.1+0"
 # ╟─1f8a4dda-3007-47bd-82da-bcc5463b0a23
 # ╠═7e58ef81-3242-4b21-8adc-c8f704954d80
 # ╟─7f840af3-bff8-4548-9d31-cf3c64fa9faf
-# ╟─5204d97e-6e04-4525-818b-a7ed642aec0d
+# ╠═5204d97e-6e04-4525-818b-a7ed642aec0d
 # ╟─29a9d1e2-b0d0-46f2-bbff-ba30f13d3ac0
 # ╠═c8b9241e-eb92-468d-9452-ee51585f5488
 # ╟─47a9daed-792b-4b75-8208-3dcf46ede4c5
 # ╟─f969579d-e392-4dce-88ba-6a5da83b599f
+# ╠═a68cfc1d-e3fd-43aa-8eea-97615713e0a4
 # ╠═338a7dce-c680-421c-af11-716f6820e9b3
+# ╠═f0806bbf-7a71-4d96-81dc-436d009cc9de
+# ╠═6dd7d4a4-e7df-4c82-bb48-edc0f8ff18ab
+# ╠═14fe97ea-97fb-42bc-b0e3-4162b4a48b71
 # ╠═d3d9929d-7c09-428d-baba-3cc22bc11e12
 # ╠═5ae1df8b-8728-45b1-971e-b7d4b217812b
 # ╟─4e3b4f48-b6ed-4c53-8e69-6043a19b1ed5
@@ -1443,7 +1489,7 @@ version = "1.4.1+0"
 # ╠═398dec96-6309-40c1-af21-ee6c0a2c7ddf
 # ╟─c1290134-68e1-43a2-88f2-4d20d2040c7d
 # ╟─4e83f213-1c69-4bf0-afa3-ac21e8967477
-# ╟─b882f6ed-b9b7-41c3-9f32-5092db1b25f5
+# ╠═b882f6ed-b9b7-41c3-9f32-5092db1b25f5
 # ╟─0f841f27-8808-49ca-8af2-95afb0f09923
 # ╟─aca3d8ff-59c4-4821-9406-ca940b0e7696
 # ╟─00000000-0000-0000-0000-000000000001
