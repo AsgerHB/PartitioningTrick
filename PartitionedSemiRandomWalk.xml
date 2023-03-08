@@ -15,18 +15,19 @@ void updateFast()
 {
     if (x&lt;=1 and t &lt;=1)
     {
-        x = x + 0.3 - 0.1 + random(0.2); 
-        t = t + 0.1 - 0.1 + random(0.2);    
+        x = x + 0.17 - 0.04 + random(0.08); 
+        t = t + 0.05 - 0.04 + random(0.08);    
     }
 }
 
 
 void updateSlow()
 {
+
     if (x&lt;=1 and t &lt;=1)
     {
-        x = x + 0.15 - 0.1 + random(0.2); 
-        t = t + 0.2 - 0.1 + random(0.2);    
+        x = x + 0.10 - 0.04 + random(0.08); 
+        t = t + 0.12 - 0.04 + random(0.08);    
     }
 }
 
@@ -108,16 +109,17 @@ system Process;
 		<option key="--good-runs" value="100000"/>
 		<option key="--eval-runs" value="100000"/>
 		<option key="--runs-pr-state" value="100000"/>
+		<option key="--epsilon" value="0.001"/>
 		<query>
 			<formula>strategy GoFast = minE ((t&gt;=1.0)*15.0 + counterSlow + counterFast*3) [#&lt;=20] { ix, it } -&gt; {  } : &lt;&gt; x&gt;=1 or t&gt;=1</formula>
 			<comment/>
 		</query>
 		<query>
-			<formula>Pr[#&lt;=20](&lt;&gt; x&gt;=1) under GoFast</formula>
+			<formula>Pr[#&lt;=20](&lt;&gt; t&gt;=1) under GoFast</formula>
 			<comment/>
 		</query>
 		<query>
-			<formula>Pr[#&lt;=20](&lt;&gt; x&gt;=1) </formula>
+			<formula>Pr[#&lt;=20](&lt;&gt; t&gt;=1) </formula>
 			<comment/>
 		</query>
 		<query>
