@@ -34,9 +34,6 @@ using Measures
 # ╔═╡ 12556d17-f66f-4db3-8718-3576b8a2c8dc
 call(f) = f()
 
-# ╔═╡ faf6e126-51f6-47ad-a02a-f673223b2600
-fast_color, slow_color, either_color = colors.PETER_RIVER, colors.CLOUDS, colors.WET_ASPHALT
-
 # ╔═╡ 8894e942-b6f6-4893-bfea-ebaa2f9c58f0
 md"""
 ## Importing the policy:
@@ -172,13 +169,30 @@ function draw(policy::Function, x_min, x_max, y_min, y_max, G; colors=[:blue, :y
 end
 
 # ╔═╡ 338a7dce-c680-421c-af11-716f6820e9b3
-draw(test_policy, 0, 1.0, 0, 1.0, 0.01, 
-	#size=(300, 200),
-	colors=[slow_color, fast_color],
-	actions=["slow", "fast"],
-	xlabel="x",
-	ylabel="t",
-	legend=:topleft)
+begin
+	draw(test_policy, 0, 1.0, 0, 1.0, 0.01, 
+		#size=(300, 200),
+		colors=[slow_color, fast_color],
+		actions=["slow", "fast"],
+		xlabel="x",
+		ylabel="t",
+		margin=2mm,
+		legend=:topleft)
+end
+
+# ╔═╡ d3d9929d-7c09-428d-baba-3cc22bc11e12
+function sinus_fast(x) 
+	a = 3
+	b = 0
+	return 1.5 + a + sin(b + x*pi*4)*1.5;
+end
+
+# ╔═╡ 5ae1df8b-8728-45b1-971e-b7d4b217812b
+function sinus_slow(x) 
+	a = 1
+	b = π
+	return 1.5 + a + sin(b + x*pi*4)*1.5;
+end
 
 # ╔═╡ 4e3b4f48-b6ed-4c53-8e69-6043a19b1ed5
 md"""
@@ -306,6 +320,60 @@ draw_discrete(discrete_policy, 0, index_max, 0, index_max,
 	xlabel="ix",
 	ylabel="it",
 	legend=:topleft)
+
+# ╔═╡ 4e83f213-1c69-4bf0-afa3-ac21e8967477
+function draw_expected_discrete(regressors, action, x_min, x_max, y_min, y_max; plotargs...)
+	size_x, size_y = Int((x_max - x_min)), Int((y_max - y_min))
+	matrix = Matrix(undef, size_x, size_y)
+	for i in 1:size_x
+		for j in 1:size_y
+			x, y = i - 1 + x_min, j - 1 + y_min
+
+			value = get_predicted_outcome_discrete(regressors, (x, y), action)		
+			
+			matrix[i, j] = value
+		end
+	end
+
+	matrix = matrix |> transpose |> copy
+
+	for (i, value) in enumerate(matrix)
+		if value == Inf
+			matrix[i] = NaN
+		end
+	end
+	
+	x_tics = 1+x_min:x_max
+	y_tics = 1+y_min:y_max
+
+	heatmap(x_tics, y_tics,
+		    matrix;
+			plotargs...)
+end
+
+# ╔═╡ b882f6ed-b9b7-41c3-9f32-5092db1b25f5
+draw_expected_discrete′(action, title) = draw_expected_discrete(jsondict2["regressors"], action, 0, index_max, 0, index_max,
+	xlabel="ix",
+	ylabel="it",
+	colorbar_title="expected cost",
+	color=cgrad(:roma, 10, categorical = true, scale = :exp),
+	title=title,
+	legend=:topleft)
+
+# ╔═╡ 0f841f27-8808-49ca-8af2-95afb0f09923
+draw_expected_discrete′("0", "slow")
+
+# ╔═╡ aca3d8ff-59c4-4821-9406-ca940b0e7696
+draw_expected_discrete′("1", "fast")
+
+# ╔═╡ 16d02d44-122c-4366-8034-ae417066dd7f
+# ╠═╡ disabled = true
+#=╠═╡
+fast_color, slow_color, either_color = colorant"#698269", colorant"#B99B6B", colorant"#F1DBBF"
+  ╠═╡ =#
+
+# ╔═╡ faf6e126-51f6-47ad-a02a-f673223b2600
+fast_color, slow_color, either_color = colors.PETER_RIVER, colors.CLOUDS, colors.WET_ASPHALT
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1356,7 +1424,9 @@ version = "1.4.1+0"
 # ╠═c8b9241e-eb92-468d-9452-ee51585f5488
 # ╟─47a9daed-792b-4b75-8208-3dcf46ede4c5
 # ╟─f969579d-e392-4dce-88ba-6a5da83b599f
-# ╟─338a7dce-c680-421c-af11-716f6820e9b3
+# ╠═338a7dce-c680-421c-af11-716f6820e9b3
+# ╠═d3d9929d-7c09-428d-baba-3cc22bc11e12
+# ╠═5ae1df8b-8728-45b1-971e-b7d4b217812b
 # ╟─4e3b4f48-b6ed-4c53-8e69-6043a19b1ed5
 # ╟─d828cba1-a6bd-43f5-a87c-74f545f8a0ec
 # ╟─f45ddeec-931c-4759-95b9-e615a5f8fe70
@@ -1366,11 +1436,15 @@ version = "1.4.1+0"
 # ╠═eddbca41-b432-46fc-ba16-323f555a8c32
 # ╟─dec3cbbd-a271-4f60-a5f4-c44069e54f53
 # ╟─472f55ea-faa7-45ce-ad4a-213cc58b1d98
-# ╟─0f931e02-1f0e-4098-a545-0774983cbdc1
+# ╠═0f931e02-1f0e-4098-a545-0774983cbdc1
 # ╟─e63bc1c4-e746-4d36-8d76-2890d5019067
 # ╟─9825a0aa-1bde-4061-a4b3-0ac19f581bfd
 # ╠═6ecd284f-1ab5-472c-82b5-237036202e2f
 # ╠═398dec96-6309-40c1-af21-ee6c0a2c7ddf
 # ╟─c1290134-68e1-43a2-88f2-4d20d2040c7d
+# ╟─4e83f213-1c69-4bf0-afa3-ac21e8967477
+# ╟─b882f6ed-b9b7-41c3-9f32-5092db1b25f5
+# ╟─0f841f27-8808-49ca-8af2-95afb0f09923
+# ╟─aca3d8ff-59c4-4821-9406-ca940b0e7696
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
