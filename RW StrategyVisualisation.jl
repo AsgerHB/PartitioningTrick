@@ -23,9 +23,9 @@ begin
 	using Serialization
 	using StatsBase
 	using Unzip
-	include("ShieldingCode/Shared Code/RandomWalk.jl")
-	include("ShieldingCode/Shared Code/FlatUI.jl")
-	include("ShieldingCode/Shared Code/RWSquares.jl")
+	include("../ShieldingCode/Shared Code/RandomWalk.jl")
+	include("../ShieldingCode/Shared Code/FlatUI.jl")
+	include("../ShieldingCode/Shared Code/RWSquares.jl")
 end
 
 # ╔═╡ 323b4ad2-2996-4424-ad59-3e150b6181c9
