@@ -10,7 +10,6 @@ double x=0.0,t=0.0;
 
 int counterSlow, counterFast;
 
-
 void updateFast()
 {
     if (x&lt;=1 and t &lt;=1)
@@ -34,12 +33,15 @@ void updateSlow()
 /**
 Gridification */
 
-// The state space is partitioned into uniformly sized squares of size G*G. 
+// PARAM: The state space is partitioned into uniformly sized squares of size G*G. 
 // Partitions are addressed by their index for each axis. Since the state space is bounded there is only a finite amount of partitions.
-const double G = 0.05;
+const double G = 0.01;
 
-const bool randomize = true;
+// PARAM: Whether - after each action - to pick another random point within the partition the system ended up in.
+const bool randomizeWithinPartition = true;
 
+// PARAM: Whether to pick a random initial location for x and t
+const bool randomizeInitial = false;
 
 // Indices of the partition which contain x and t.
 int ix, it;
@@ -58,11 +60,21 @@ void gridify()
     tl = it*G;
     tu = tl + G;
 
-    if (randomize)
+    if (randomizeWithinPartition)
     {
         x = xl + random(G);
         t = tl + random(G);
     }
+}
+
+void initialize()
+{
+    if (randomizeInitial)
+    {
+        x = random(1);
+        t = random(1);
+    }
+    gridify();
 }
 </declaration>
 	<template>
@@ -75,21 +87,29 @@ void gridify()
 		<location id="id1" x="0" y="263">
 			<committed/>
 		</location>
-		<init ref="id0"/>
-		<transition id="id2" controllable="false">
+		<location id="id2" x="0" y="-68">
+			<committed/>
+		</location>
+		<init ref="id2"/>
+		<transition id="id3">
+			<source ref="id2"/>
+			<target ref="id0"/>
+			<label kind="assignment" x="-42" y="25">initialize()</label>
+		</transition>
+		<transition id="id4" controllable="false">
 			<source ref="id1"/>
 			<target ref="id0"/>
 			<label kind="assignment" x="-42" y="187">gridify()</label>
 		</transition>
-		<transition id="id3">
+		<transition id="id5">
 			<source ref="id0"/>
 			<target ref="id1"/>
 			<label kind="synchronisation" x="-204" y="-17">slow!</label>
 			<label kind="assignment" x="-382" y="0">updateSlow(), counterSlow++</label>
-			<nail x="-153" y="-93"/>
+			<nail x="-153" y="-85"/>
 			<nail x="-153" y="59"/>
 		</transition>
-		<transition id="id4">
+		<transition id="id6">
 			<source ref="id0"/>
 			<target ref="id1"/>
 			<label kind="synchronisation" x="170" y="-25">fast!</label>
@@ -111,7 +131,15 @@ system Process;
 		<option key="--runs-pr-state" value="100000"/>
 		<option key="--epsilon" value="0.001"/>
 		<query>
+			<formula>strategy GoFast = loadStrategy  { ix, it } -&gt; {  } ("/home/asger/PartitionedSemiRandomWalk.strattegy.json")</formula>
+			<comment/>
+		</query>
+		<query>
 			<formula>strategy GoFast = minE ((t&gt;=1.0)*15.0 + counterSlow + counterFast*3) [#&lt;=20] { ix, it } -&gt; {  } : &lt;&gt; x&gt;=1 or t&gt;=1</formula>
+			<comment/>
+		</query>
+		<query>
+			<formula>saveStrategy("/home/asger/PartitionedSemiRandomWalk.strattegy.json",GoFast)</formula>
 			<comment/>
 		</query>
 		<query>
@@ -123,16 +151,15 @@ system Process;
 			<comment/>
 		</query>
 		<query>
+			<formula>Pr[#&lt;=20](&lt;&gt; it==0) </formula>
+			<comment/>
+		</query>
+		<query>
 			<formula>simulate [#&lt;=20;100] { x, t }</formula>
 			<comment/>
 		</query>
 		<query>
 			<formula>simulate [#&lt;=20;100] { x, t } under GoFast</formula>
-			<comment/>
-		</query>
-		<query>
-			<formula>saveStrategy("/home/asger/PartitionedSemiRandomWalk.strattegy.json",GoFast)
-	    </formula>
 			<comment/>
 		</query>
 		<query>

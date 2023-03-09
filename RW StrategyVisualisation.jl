@@ -34,6 +34,15 @@ using Measures
 # ╔═╡ 12556d17-f66f-4db3-8718-3576b8a2c8dc
 call(f) = f()
 
+# ╔═╡ 16d02d44-122c-4366-8034-ae417066dd7f
+# ╠═╡ disabled = true
+#=╠═╡
+fast_color, slow_color, either_color = colorant"#698269", colorant"#B99B6B", colorant"#F1DBBF"
+  ╠═╡ =#
+
+# ╔═╡ faf6e126-51f6-47ad-a02a-f673223b2600
+fast_color, slow_color, either_color = colors.PETER_RIVER, colors.CLOUDS, colors.WET_ASPHALT
+
 # ╔═╡ 8894e942-b6f6-4893-bfea-ebaa2f9c58f0
 md"""
 ## Importing the policy:
@@ -256,6 +265,15 @@ end
 # ╔═╡ d2f32ea1-08bc-49a1-a358-2438914ce3c9
 jsondict2 = selected_discrete_file["data"] |> IOBuffer |> JSON.parse
 
+# ╔═╡ a8070862-787b-4c0e-929f-399469d53879
+jsondict2["actions"]
+
+# ╔═╡ cd98ba84-d8b8-429d-b687-d20efaa82b0f
+slow = "1"
+
+# ╔═╡ 54e5f4bf-e172-4b4e-b9c1-9100f3a16805
+fast = "2"
+
 # ╔═╡ 1096724c-b121-4fe4-b548-d8390448a23f
 jsondict2["regressors"] |> keys |> unique |> sort
 
@@ -296,7 +314,7 @@ function get_discrete_policy(file)
 	
 	policy = (state) -> begin
 		result = get_actions_discrete(jsondict, state)
-		delete!(result, "2")
+		result = result ∩ Set((slow, fast))
 		result
 	end
 end
@@ -319,14 +337,14 @@ function draw_discrete(policy::Function, x_min, x_max, y_min, y_max; colors=[:bl
 			x, y = i - 1 + x_min, j - 1 + y_min
 
 			allowed = policy([x, y])
-			if allowed == Set(["0"])
+			if allowed == Set([slow])
 				value = 0
-			elseif allowed == Set(["1"])
+			elseif allowed == Set([fast])
 				value = 1
-			elseif allowed == Set(["0", "1"])
+			elseif allowed == Set([slow, fast])
 				value = 2
 			else
-				error("Unexpected value", allowed)
+				error("Unexpected value ", allowed, x, y)
 			end
 			
 			matrix[i, j] = value
@@ -343,6 +361,7 @@ function draw_discrete(policy::Function, x_min, x_max, y_min, y_max; colors=[:bl
 	heatmap!(x_tics, y_tics,
 		    transpose(matrix),
 			c=colors, 
+			clims=(0,2),
 			colorbar=nothing)
 end
 
@@ -403,19 +422,26 @@ draw_expected_discrete′(action, title) =
 		legend=:topleft)
 
 # ╔═╡ 0f841f27-8808-49ca-8af2-95afb0f09923
-draw_expected_discrete′("0", "slow")
+draw_expected_discrete′(slow, "slow")
 
 # ╔═╡ aca3d8ff-59c4-4821-9406-ca940b0e7696
-draw_expected_discrete′("1", "fast")
+draw_expected_discrete′(fast, "fast")
 
-# ╔═╡ 16d02d44-122c-4366-8034-ae417066dd7f
-# ╠═╡ disabled = true
-#=╠═╡
-fast_color, slow_color, either_color = colorant"#698269", colorant"#B99B6B", colorant"#F1DBBF"
-  ╠═╡ =#
+# ╔═╡ 610e4b24-ad7d-4ba5-a7ab-caa5714035fb
+function gridify(x, t)
+	ix = floor(x/G)
+    it = floor(t/G)
 
-# ╔═╡ faf6e126-51f6-47ad-a02a-f673223b2600
-fast_color, slow_color, either_color = colors.PETER_RIVER, colors.CLOUDS, colors.WET_ASPHALT
+    xl = ix*G
+    xu = xl + G
+    tl = it*G
+    tu = tl + G
+
+	(;ix, it, xl, xu, tl, tu)
+end
+
+# ╔═╡ 0094cd8d-c87d-4687-b6ea-00685445401e
+gridify(0.01, 0.04)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1477,20 +1503,25 @@ version = "1.4.1+0"
 # ╟─d828cba1-a6bd-43f5-a87c-74f545f8a0ec
 # ╟─f45ddeec-931c-4759-95b9-e615a5f8fe70
 # ╠═d2f32ea1-08bc-49a1-a358-2438914ce3c9
+# ╠═a8070862-787b-4c0e-929f-399469d53879
+# ╠═cd98ba84-d8b8-429d-b687-d20efaa82b0f
+# ╠═54e5f4bf-e172-4b4e-b9c1-9100f3a16805
 # ╠═1096724c-b121-4fe4-b548-d8390448a23f
 # ╟─6dcac704-1316-4105-8008-e3be086cb92a
 # ╠═eddbca41-b432-46fc-ba16-323f555a8c32
 # ╟─dec3cbbd-a271-4f60-a5f4-c44069e54f53
 # ╟─472f55ea-faa7-45ce-ad4a-213cc58b1d98
-# ╠═0f931e02-1f0e-4098-a545-0774983cbdc1
+# ╟─0f931e02-1f0e-4098-a545-0774983cbdc1
 # ╟─e63bc1c4-e746-4d36-8d76-2890d5019067
 # ╟─9825a0aa-1bde-4061-a4b3-0ac19f581bfd
 # ╠═6ecd284f-1ab5-472c-82b5-237036202e2f
 # ╠═398dec96-6309-40c1-af21-ee6c0a2c7ddf
-# ╟─c1290134-68e1-43a2-88f2-4d20d2040c7d
+# ╠═c1290134-68e1-43a2-88f2-4d20d2040c7d
 # ╟─4e83f213-1c69-4bf0-afa3-ac21e8967477
 # ╠═b882f6ed-b9b7-41c3-9f32-5092db1b25f5
-# ╟─0f841f27-8808-49ca-8af2-95afb0f09923
-# ╟─aca3d8ff-59c4-4821-9406-ca940b0e7696
+# ╠═0f841f27-8808-49ca-8af2-95afb0f09923
+# ╠═aca3d8ff-59c4-4821-9406-ca940b0e7696
+# ╠═610e4b24-ad7d-4ba5-a7ab-caa5714035fb
+# ╠═0094cd8d-c87d-4687-b6ea-00685445401e
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
