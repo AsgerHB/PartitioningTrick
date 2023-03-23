@@ -22,6 +22,7 @@ begin
 	using Plots
 	using Serialization
 	using StatsBase
+	using NaturalSort
 	using Unzip
 	include("../ShieldingCode/Shared Code/RandomWalk.jl")
 	include("../ShieldingCode/Shared Code/FlatUI.jl")
@@ -66,6 +67,52 @@ end
 # ╔═╡ 9a3af469-7dc0-4d29-a375-bdc79415e950
 jsondict = selected_file["data"] |> IOBuffer |> JSON.parse
 
+# ╔═╡ 534968b3-b361-41e0-8e2a-c3ec9e73eef4
+function show_strategy_info(s::Dict)
+	pointvars = s["pointvars"]
+	pointvars = join(pointvars, ", ")
+	statevars = s["statevars"]
+	statevars = join(statevars, ", ")
+	
+	locations(dict) = join(["$k: `$v`" 
+		for (k, v) in sort(dict, lt=natural)
+	], ", ")
+	
+	locationnames = s["locationnames"]
+	
+	locationnames = join(["       - $k: $(locations(v))"
+		for (k, v) in locationnames
+	], "\n\n")
+
+	actions = s["actions"]
+	actions = sort(actions, lt=natural)
+	actions = join(["      - $k: `$v`"
+		for (k, v) in actions
+	], "\n\n")
+
+	s["type"] != "state->regressor" && @error("Strategy type not supported")
+	s["version"] != 1.0 && @error("Strategy version not supported")
+	
+	Markdown.parse("""
+	!!! info "Strategy { $pointvars } -> { $statevars }"
+
+		`pointvars`: $(statevars == "" ? "none" : statevars)
+	
+		`statevars`: $(pointvars == "" ? "none" : pointvars)
+
+		**Location names:**
+	
+	$(locationnames)
+
+		**Actions**
+
+	$actions
+	""")
+end
+
+# ╔═╡ 1c8b2b93-8a23-4717-99a1-6d0cd8fa56b1
+show_strategy_info(jsondict)
+
 # ╔═╡ b3e2a24a-fab6-414e-be8b-351a0e7d1b1c
 md"""
 ## Methods to read the policy file
@@ -90,7 +137,7 @@ end
 get_variable_names(selected_file)
 
 # ╔═╡ 5204d97e-6e04-4525-818b-a7ed642aec0d
-function get_predicted_outcome(regressor, state)
+function get_predicted_outcome(regressor, statevars)
 	# Base case
 	if typeof(regressor) <: Number
 		return regressor
@@ -98,12 +145,12 @@ function get_predicted_outcome(regressor, state)
 
 	# Recursion
 	var_index = regressor["var"] + 1 # Julia indexes start at 1
-	var = state[var_index]
+	var = statevars[var_index]
 	bound = regressor["bound"]
 	if var >= bound
-		get_predicted_outcome(regressor["high"], state)
+		get_predicted_outcome(regressor["high"], statevars)
 	else
-		get_predicted_outcome(regressor["low"], state)
+		get_predicted_outcome(regressor["low"], statevars)
 	end
 end
 
@@ -283,11 +330,11 @@ md"""
 """
 
 # ╔═╡ 0f931e02-1f0e-4098-a545-0774983cbdc1
-function get_predicted_outcome_discrete(regressors, state, action)
-	state′ = "($(state[1]),$(state[2]))"
+function get_predicted_outcome_discrete(regressors, pointvars, action)
+	pointvars′ = "($(pointvars[1]),$(pointvars[2]))"
 
-	for (state″, regressor) in regressors
-		if state′ == state″
+	for (pointvars″, regressor) in regressors
+		if pointvars′ == pointvars″
 			return get(regressor["regressor"], action, Inf)
 		end
 	end
@@ -448,6 +495,7 @@ PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
 Measures = "442fdcdd-2543-5da2-b0f3-8c86c306513e"
+NaturalSort = "c020b1a1-e9b0-503a-9c33-f039bfc54a85"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
@@ -458,6 +506,7 @@ Unzip = "41fe7b60-77ed-43a1-b4f0-825fd5a5650d"
 [compat]
 JSON = "~0.21.3"
 Measures = "~0.3.2"
+NaturalSort = "~1.0.0"
 Plots = "~1.31.7"
 PlutoUI = "~0.7.40"
 StatsBase = "~0.33.21"
@@ -470,7 +519,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.8.2"
 manifest_format = "2.0"
-project_hash = "56f374c19943efdf53de090b16f98386c06c3c84"
+project_hash = "355a9189a6e133d1ee7e9f135fbf87c2a240ab02"
 
 [[deps.AbstractPlutoDingetjes]]
 deps = ["Pkg"]
@@ -954,6 +1003,11 @@ deps = ["OpenLibm_jll"]
 git-tree-sha1 = "a7c3d1da1189a1c2fe843a3bfa04d18d20eb3211"
 uuid = "77ba4419-2d1f-58cd-9bb1-8ffee604a2e3"
 version = "1.0.1"
+
+[[deps.NaturalSort]]
+git-tree-sha1 = "eda490d06b9f7c00752ee81cfa451efe55521e21"
+uuid = "c020b1a1-e9b0-503a-9c33-f039bfc54a85"
+version = "1.0.0"
 
 [[deps.NetworkOptions]]
 uuid = "ca575930-c2e3-43a9-ace4-1e988b2c1908"
@@ -1480,6 +1534,8 @@ version = "1.4.1+0"
 # ╟─eeebe049-8b0b-4e3e-8cb2-4ee89e241273
 # ╠═79fb04f7-2d45-454f-89c5-7312d4aeadde
 # ╠═9a3af469-7dc0-4d29-a375-bdc79415e950
+# ╟─534968b3-b361-41e0-8e2a-c3ec9e73eef4
+# ╠═1c8b2b93-8a23-4717-99a1-6d0cd8fa56b1
 # ╟─b3e2a24a-fab6-414e-be8b-351a0e7d1b1c
 # ╟─1a27105e-58d5-4dc2-bb7e-f7392a39c900
 # ╟─cadb990a-483b-4745-aad2-38ec784fbed4
@@ -1511,7 +1567,7 @@ version = "1.4.1+0"
 # ╠═eddbca41-b432-46fc-ba16-323f555a8c32
 # ╟─dec3cbbd-a271-4f60-a5f4-c44069e54f53
 # ╟─472f55ea-faa7-45ce-ad4a-213cc58b1d98
-# ╟─0f931e02-1f0e-4098-a545-0774983cbdc1
+# ╠═0f931e02-1f0e-4098-a545-0774983cbdc1
 # ╟─e63bc1c4-e746-4d36-8d76-2890d5019067
 # ╟─9825a0aa-1bde-4061-a4b3-0ac19f581bfd
 # ╠═6ecd284f-1ab5-472c-82b5-237036202e2f
