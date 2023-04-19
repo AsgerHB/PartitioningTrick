@@ -1,1 +1,1 @@
-# PartitionedRandomWalk
+# Partitioning Trick
