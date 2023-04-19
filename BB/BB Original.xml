@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.5//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_5.dtd'>
+<nta>
+	<declaration>/* Simulation-specific stuff */
+urgent broadcast chan bounce;
+broadcast chan hit;
+clock time;
+clock p, v;
+int number_deaths = 0;
+</declaration>
+	<template>
+		<name x="5" y="5">Ball</name>
+		<declaration>// Place local declarations here.
+</declaration>
+		<location id="id0" x="297" y="-34">
+			<name x="314" y="42">Location2</name>
+			<label kind="invariant" x="263" y="-93">v' == -9.81 &amp;&amp;
+p' == v</label>
+			<label kind="exponentialrate" x="289" y="-110">1</label>
+		</location>
+		<location id="id1" x="-110" y="-34">
+			<name x="-120" y="-68">Location1</name>
+			<urgent/>
+		</location>
+		<location id="id2" x="-110" y="246">
+			<name x="-119" y="263">Location3</name>
+			<committed/>
+		</location>
+		<init ref="id1"/>
+		<transition id="id3" controllable="false">
+			<source ref="id2"/>
+			<target ref="id1"/>
+			<label kind="guard" x="-102" y="68">v &lt;= 1</label>
+			<label kind="assignment" x="-102" y="85">number_deaths++, 
+v=0, p=0</label>
+		</transition>
+		<transition id="id4" controllable="false">
+			<source ref="id2"/>
+			<target ref="id0"/>
+			<label kind="guard" x="68" y="85">v&gt;1</label>
+		</transition>
+		<transition id="id5">
+			<source ref="id0"/>
+			<target ref="id0"/>
+			<label kind="guard" x="467" y="-108">p &gt;= 4 &amp;&amp; v &gt;= 0</label>
+			<label kind="synchronisation" x="467" y="-92">hit?</label>
+			<label kind="assignment" x="467" y="-76">v = -4 - (0.95 - 0.05 + random(2*0.05))*v</label>
+			<nail x="459" y="-110"/>
+			<nail x="459" y="-34"/>
+		</transition>
+		<transition id="id6">
+			<source ref="id0"/>
+			<target ref="id0"/>
+			<label kind="guard" x="467" y="10">p &gt;= 4 &amp;&amp; v &gt;= -4 &amp;&amp; v &lt; 0</label>
+			<label kind="synchronisation" x="467" y="26">hit?</label>
+			<label kind="assignment" x="467" y="42">v = -4.0</label>
+			<nail x="459" y="85"/>
+			<nail x="459" y="10"/>
+		</transition>
+		<transition id="id7" controllable="false">
+			<source ref="id0"/>
+			<target ref="id2"/>
+			<label kind="guard" x="34" y="204">p &lt;= 0 &amp;&amp; v &lt;= 0</label>
+			<label kind="synchronisation" x="68" y="187">bounce!</label>
+			<label kind="assignment" x="-68" y="221">v = -(0.91 - 0.06 + random(2*0.06))*v, p = 0</label>
+			<nail x="297" y="246"/>
+		</transition>
+		<transition id="id8" controllable="false">
+			<source ref="id1"/>
+			<target ref="id0"/>
+			<label kind="assignment" x="-25" y="-25">p = 7 + random(3.0), v = 0</label>
+		</transition>
+	</template>
+	<template>
+		<name>LearnerPlayer</name>
+		<declaration>clock x;
+int fired;</declaration>
+		<location id="id9" x="0" y="-102">
+			<name x="-8" y="-42">Location6</name>
+			<label kind="invariant" x="-8" y="-85">x &lt;= 1 &amp;&amp;
+x' == 10</label>
+		</location>
+		<location id="id10" x="0" y="-272">
+			<name x="-10" y="-306">Location4</name>
+			<committed/>
+		</location>
+		<init ref="id9"/>
+		<transition id="id11">
+			<source ref="id10"/>
+			<target ref="id9"/>
+			<nail x="-119" y="-102"/>
+		</transition>
+		<transition id="id12">
+			<source ref="id10"/>
+			<target ref="id9"/>
+			<label kind="synchronisation" x="127" y="-152">hit!</label>
+			<label kind="assignment" x="127" y="-135">++fired</label>
+			<nail x="119" y="-102"/>
+		</transition>
+		<transition id="id13" controllable="false">
+			<source ref="id9"/>
+			<target ref="id10"/>
+			<label kind="guard" x="8" y="-161">x &gt;= 1</label>
+			<label kind="assignment" x="8" y="-178">x = 0</label>
+		</transition>
+	</template>
+	<system>system Ball, LearnerPlayer;</system>
+	<queries>
+		<option key="--total-runs" value="12000"/>
+		<option key="--max-iterations" value="1"/>
+		<option key="--good-runs" value="12000"/>
+		<option key="--eval-runs" value="12000"/>
+		<option key="--max-reset-learning" value="1"/>
+		<option key="--runs-pr-state" value="12000"/>
+		<query>
+			<formula>E[&lt;=120; 1000] (max:LearnerPlayer.fired + number_deaths*1000)</formula>
+			<comment>3 minutes</comment>
+		</query>
+		<query>
+			<formula>E[&lt;=120;1000] (max:number_deaths)</formula>
+			<comment/>
+		</query>
+		<query>
+			<formula>E[&lt;=120;1000] (max:interventions)</formula>
+			<comment>120 seconds</comment>
+		</query>
+		<query>
+			<formula/>
+			<comment/>
+		</query>
+		<query>
+			<formula>strategy S = minE (LearnerPlayer.fired + number_deaths*1000 ) [&lt;=120] {} -&gt; {v, p}: &lt;&gt; time &gt;= 120</formula>
+			<comment>3 minutes</comment>
+		</query>
+		<query>
+			<formula>saveStrategy("./BB.strategy.json", S)</formula>
+			<comment/>
+		</query>
+		<query>
+			<formula>E[&lt;=120;1000] (max:LearnerPlayer.fired) under S</formula>
+			<comment/>
+		</query>
+		<query>
+			<formula>Pr[&lt;=120] (&lt;&gt; number_deaths &gt; 0) under S</formula>
+			<comment/>
+		</query>
+		<query>
+			<formula>E[&lt;=120;1000] (max:interventions) under S</formula>
+			<comment/>
+		</query>
+		<query>
+			<formula/>
+			<comment/>
+		</query>
+		<query>
+			<formula>simulate[&lt;=120;1] {v*0.1 + 10, p} under S</formula>
+			<comment/>
+		</query>
+		<query>
+			<formula/>
+			<comment/>
+		</query>
+		<query>
+			<formula/>
+			<comment/>
+		</query>
+		<query>
+			<formula/>
+			<comment/>
+		</query>
+		<query>
+			<formula/>
+			<comment/>
+		</query>
+	</queries>
+</nta>
