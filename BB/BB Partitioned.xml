@@ -20,7 +20,7 @@ const double G = 0.5;
 // PARAM: Whether - after each action - to pick another random point within the partition the system ended up in.
 const bool randomizeWithinPartition = true;
 
-// PARAM: Whether to pick a random initial location for v and p
+// PARAM: Whether to pick a completely random initial location for v and p. Otherwise, pick v = 0, p in [7; 10]
 const bool randomizeInitial = false;
 
 // PARAM: Possible initial state when randomizing completely
