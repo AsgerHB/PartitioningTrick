@@ -41,8 +41,10 @@ def get_results(base_path, folder):
         return None
 
     # Counting hard on having the right text encoding here.
-    result = [re.sub(r" ± .+", "", r) for r in result]
-    result = [re.sub(r" ≈ ", "", r) for r in result]
+    result = [re.sub(r" ± .+", "", r) for r in result] # 630.632 ± 1.14171 (95% CI) ==> 630.632
+    result = [re.sub(r"≈", "", r) for r in result] # ≈ 0 ==> 0
+    result = [re.sub(r"≥", "", r) for r in result]           # ≥ 0.913792 (95% CI) ==> 0.913792 (95% CI)
+    result = [re.sub(r"\(95% CI\)", "", r) for r in result]  # 0.913792 (95% CI)   ==> 0.913792
     
     return result
 
