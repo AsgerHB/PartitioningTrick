@@ -30,7 +30,7 @@ import "libc.so.6" {
 // Partitions are addressed by their index for each axis. Since the state space is bounded there is only a finite amount of partitions.
 double GRID_P = 0.1;
 double GRID_V = 0.1;
-bool SAMPLED_COST = false;
+int SAMPLED_COST = 0;
 
 
 
@@ -104,11 +104,11 @@ double partition_cost() {
     vu = vl + GRID_V;
     pl = ip*GRID_P;
     pu = pl + GRID_P;
-    if(SAMPLED_COST)
+    if(SAMPLED_COST == 2)
         return p;
-    if(AGENT_P == -1 || AGENT_P == -2)
+    if(SAMPLED_COST == -1)
         return pl;
-    if(AGENT_P == 1 || AGENT_P == -3)
+    if(SAMPLED_COST == 1)
         return pu;
     return (pl + pu) / 2.0;
 }
