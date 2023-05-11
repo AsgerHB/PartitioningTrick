@@ -4,9 +4,11 @@
 	<declaration>/* Simulation-specific stuff */
 urgent broadcast chan bounce;
 broadcast chan hit;
+broadcast chan did_init;
 clock time;
 clock p, v;
 double reward = 0.0;
+double disc_reward = 0.0;
 double number_deaths = 0;
 
 // helper structure for holding pointers
@@ -210,15 +212,18 @@ v=0, p=0</label>
 		<transition id="id8" controllable="false">
 			<source ref="id1"/>
 			<target ref="id0"/>
+			<label kind="synchronisation" x="-92" y="-51">did_init!</label>
 			<label kind="assignment" x="-25" y="-25">initialize()</label>
 		</transition>
 	</template>
 	<template>
 		<name>LearnerPlayer</name>
 		<declaration>clock x;
-int fired;</declaration>
-		<location id="id9" x="0" y="-136">
-			<label kind="invariant" x="17" y="-161">x &lt;= 1 &amp;&amp;
+int fired;
+double steps = 0;
+const double discount = 0.99;</declaration>
+		<location id="id9" x="0" y="-93">
+			<label kind="invariant" x="17" y="-118">x &lt;= 1 &amp;&amp;
 x' == 10</label>
 		</location>
 		<location id="id10" x="0" y="-272">
@@ -227,22 +232,31 @@ x' == 10</label>
 		<location id="id11" x="0" y="-17">
 			<committed/>
 		</location>
-		<init ref="id9"/>
-		<transition id="id12" controllable="false">
+		<location id="id12" x="144" y="-297">
+		</location>
+		<init ref="id12"/>
+		<transition id="id13" controllable="false">
+			<source ref="id12"/>
+			<target ref="id10"/>
+			<label kind="synchronisation" x="52" y="-314">did_init?</label>
+			<nail x="34" y="-297"/>
+		</transition>
+		<transition id="id14" controllable="false">
 			<source ref="id11"/>
 			<target ref="id9"/>
-			<label kind="assignment" x="8" y="-51">gridify()</label>
+			<label kind="assignment" x="17" y="0">gridify()</label>
 		</transition>
-		<transition id="id13">
+		<transition id="id15">
 			<source ref="id10"/>
 			<target ref="id11"/>
-			<label kind="assignment" x="-195" y="-348">reward = reward + 10.0
+			<label kind="assignment" x="-195" y="-348">reward = reward + 10.0,
+disc_reward = disc_reward + (pow(discount, steps)*10)
 // abstaining from hitting 
 // yeilds 10 reward;</label>
 			<nail x="-76" y="-272"/>
 			<nail x="-76" y="-17"/>
 		</transition>
-		<transition id="id14">
+		<transition id="id16">
 			<source ref="id10"/>
 			<target ref="id11"/>
 			<label kind="synchronisation" x="136" y="-272">hit!</label>
@@ -250,13 +264,15 @@ x' == 10</label>
 			<nail x="127" y="-272"/>
 			<nail x="127" y="-17"/>
 		</transition>
-		<transition id="id15" controllable="false">
+		<transition id="id17" controllable="false">
 			<source ref="id9"/>
 			<target ref="id10"/>
 			<label kind="guard" x="8" y="-246">x &gt;= 1</label>
 			<label kind="assignment" x="8" y="-229">x = 0,
 reward = 
-   reward + partition_cost()</label>
+   reward + partition_cost(),
+disc_reward = disc_reward + (pow(discount, steps)*partition_cost()),
+steps = steps + 1</label>
 		</transition>
 	</template>
 	<system>system Ball, LearnerPlayer;</system>
@@ -280,11 +296,11 @@ reward =
 			<comment/>
 		</query>
 		<query>
-			<formula>E[&lt;=120;1000] (max:reward) under S</formula>
+			<formula>E[&lt;=120;1000] (max:disc_reward) under S</formula>
 			<comment/>
 		</query>
 		<query>
-			<formula>saveStrategy("strat.json", S)</formula>
+			<formula>E[&lt;=120;1000] (max:reward) under S</formula>
 			<comment/>
 		</query>
 		<query>
