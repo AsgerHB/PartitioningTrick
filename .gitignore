@@ -24,3 +24,7 @@ docs/site/
 Manifest.toml
 
 Figures/
+
+.vscode/
+
+**/.ipynb_checkpoints/
