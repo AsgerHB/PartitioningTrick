@@ -51,7 +51,7 @@ int iv, ip;
 // The lower bound for v and the lower bound for p. The upper bound is vl + G etc.
 double vl, vu, pl, pu;
 
-// agents for picking successor in each dimension; -1=lower, 0=mid, 1=upper, 2=uniform, 3=memoryfull
+// agents for picking successor in each dimension; -3=higest speed (speed=abs(velocity)), -2=least speed,  -1=lower, 0=mid, 1=upper, 2=uniform, 3=memoryfull
 int AGENT_V = 2;
 int AGENT_P = 2;
 
