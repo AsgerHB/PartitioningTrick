@@ -20,6 +20,8 @@ clock x2 = 15.0; // Voltage, V
 clock x_R = 73.0; // Resistance (system load), R
 
 clock dist;     // Accumulated distance
+double reward;
+double disc_reward;
 
 int switches;
 int number_deaths; 
@@ -130,14 +132,13 @@ double partition_cost() {
     iV = fint(floor(x2/GRID_V));
     Vl = iV*GRID_V;
     Vu = Vl + GRID_V;
-    if(SAMPLED_COST == UNIFORM)
-        return fabs(x1 - x1ref) + fabs(x2 - x2ref);
-    if(SAMPLED_COST == LOWER)
-        return fabs(Il - x1ref) + fabs(Vl - x2ref);
-    if(SAMPLED_COST == UPPER)
-        return fabs(Iu - x1ref) + fabs(Vu - x2ref);
-    // TODO: sampling cost based on best- or worst-case point in partition
-    return fabs((Il + Iu)/2.0 - x1ref) + fabs((Vl + Vu)/2 + x2ref);
+    if(SAMPLED_COST == 2)
+        return pow(x2 - x2ref, 2);
+    if(SAMPLED_COST == -1)
+        return pow(Vl - x2ref, 2);
+    if(SAMPLED_COST == 1)
+        return pow(Vu - x2ref, 2);
+    return pow((Vl + Vu)/2 - x2ref, 2);
 }
 
 void initialize()
@@ -294,32 +295,37 @@ d_aux = 0</label>
 	</template>
 	<template>
 		<name>Controller</name>
-		<location id="id16" x="-85" y="0">
+		<declaration>double steps = 0;
+const double discount = 0.99;</declaration>
+		<location id="id16" x="-85" y="-59">
 			<committed/>
 		</location>
 		<location id="id17" x="-85" y="119">
-			<label kind="invariant" x="-161" y="136">dist'==fabs(x2-x2ref)</label>
+			<label kind="invariant" x="-161" y="136">dist'==pow(x2 - x2ref, 2)</label>
 		</location>
 		<init ref="id17"/>
 		<transition id="id18">
 			<source ref="id16"/>
 			<target ref="id17"/>
 			<label kind="synchronisation" x="-25" y="102">off!</label>
-			<nail x="-25" y="0"/>
+			<nail x="-25" y="-59"/>
 			<nail x="-25" y="119"/>
 		</transition>
 		<transition id="id19">
 			<source ref="id16"/>
 			<target ref="id17"/>
 			<label kind="synchronisation" x="-170" y="102">on!</label>
-			<nail x="-144" y="0"/>
+			<nail x="-144" y="-59"/>
 			<nail x="-144" y="119"/>
 		</transition>
 		<transition id="id20" controllable="false">
 			<source ref="id17"/>
 			<target ref="id16"/>
-			<label kind="synchronisation" x="-85" y="76">tock?</label>
-			<label kind="assignment" x="-85" y="59">gridify()</label>
+			<label kind="synchronisation" x="-76" y="-34">tock?</label>
+			<label kind="assignment" x="-76" y="-17">gridify(),
+reward = reward + partition_cost(),
+disc_reward = disc_reward + (pow(discount, steps)*partition_cost()),
+steps = steps + 1</label>
 		</transition>
 	</template>
 	<template>
@@ -441,15 +447,11 @@ c = 0</label>
 			<comment/>
 		</query>
 		<query>
-			<formula>/* E[&lt;=120;1000] (max:disc_reward) under S */</formula>
+			<formula>E[&lt;=120;1000] (max:disc_reward) under S</formula>
 			<comment/>
 		</query>
 		<query>
-			<formula>/* E[&lt;=120;1000] (max:reward) under S */</formula>
-			<comment/>
-		</query>
-		<query>
-			<formula/>
+			<formula>E[&lt;=120;1000] (max:reward) under S</formula>
 			<comment/>
 		</query>
 		<query>
