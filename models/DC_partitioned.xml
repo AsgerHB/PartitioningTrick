@@ -24,6 +24,12 @@ clock dist;     // Accumulated distance
 int switches;
 int number_deaths; 
 
+// Consupmtion. The output resistance fluctuates every microsecond.
+const double R_fluctuation = 30;
+const int R_min = 30;
+const int R_max = 200;
+
+
 const double x_L = 450e-6;  // capacitor
 const double x_RL = 0.3;   
 const double x_Co = 220e-6; 
@@ -53,11 +59,11 @@ import "libc.so.6" {
     int atoi(ptr_t ptr);
 };
 
-// The state space is partitioned into uniformly sized boxes of size GRID_I*GRID_V*GRID_R
+// The state space is partitioned into uniformly sized boxes of size GRID_I*GRID_R*GRID_R
 // Partitions are addressed by their index for each axis. Since the state space is bounded there is only a finite amount of partitions.
 double GRID_I = 0.1;
 double GRID_V = 0.1;
-int GRID_R = 1; // R is represented as an integer in [30;200]
+double GRID_R = 0.1; // R is represented as an integer in [30;200]
 
 // Whether to pick a completely random initial state.
 bool randomizeInitial = false;
@@ -67,8 +73,6 @@ const double I_min = 0;
 const double I_max = 4;
 const double V_min = 14;
 const double V_max = 16;
-const int R_min = 30;
-const int R_max = 200;
 
 // Indices of the partition which contain I, V and R.
 int iI, iV, iR;
@@ -113,10 +117,10 @@ void gridify()
     else if(AGENT_V ==  MID)    x2 = (Vl + Vu) / 2.0;
     // else fallthrough to memoryfull
 
-    if(AGENT_R == UNIFORM)      x_R = Rl + floor(random(GRID_R + 1));
+    if(AGENT_R == UNIFORM)      x_R = Rl + random(GRID_R + 1);
     else if(AGENT_R == LOWER)   x_R = Rl;
     else if(AGENT_R ==  UPPER)  x_R = Ru;
-    else if(AGENT_R ==  MID)    x_R = floor((Rl + Ru) / 2.0);
+    else if(AGENT_R ==  MID)    x_R = (Rl + Ru) / 2.0;
     // else fallthrough to memoryfull
 }
 
@@ -138,19 +142,24 @@ double partition_cost() {
 
 void initialize()
 {
-    // Note that R has been omitted here. 
     ptr_t env = getenv("GRID_I");
     if(env.l || env.h)
         GRID_I = (I_max - I_min) / atoi(env);
     env = getenv("GRID_V");
     if(env.l || env.h)
         GRID_V = (V_max - V_min) / atoi(env);
+    env = getenv("GRID_R");
+    if(env.l || env.h)
+        GRID_R = (V_max - V_min) / atoi(env);
     env = getenv("AGENT_I");
     if(env.l || env.h)
         AGENT_I = atoi(env);
     env = getenv("AGENT_V");
     if(env.l || env.h)
         AGENT_V = atoi(env);
+    env = getenv("AGENT_R");
+    if(env.l || env.h)
+        AGENT_R = atoi(env);
 
     env = getenv("SAMPLED_COST");
     if(env.l || env.h)
@@ -164,6 +173,12 @@ void initialize()
         x1 = I_min + random(I_max - I_min);
         x2 = V_min + random(V_max - V_min);
         x_R = R_min + floor(random(R_max - R_min + 1));
+    }
+    else
+    {
+        x1 = 0.30;
+        x2 = 15.0;
+        x_R = 30;
     }
     gridify();
 }
@@ -304,6 +319,7 @@ d_aux = 0</label>
 			<source ref="id17"/>
 			<target ref="id16"/>
 			<label kind="synchronisation" x="-85" y="76">tock?</label>
+			<label kind="assignment" x="-85" y="59">gridify()</label>
 		</transition>
 	</template>
 	<template>
@@ -313,7 +329,7 @@ d_aux = 0</label>
 			<label kind="invariant" x="-493" y="-17">c &lt;= 1</label>
 		</location>
 		<init ref="id21"/>
-		<transition id="id22">
+		<transition id="id22" controllable="false">
 			<source ref="id21"/>
 			<target ref="id21"/>
 			<label kind="guard" x="-484" y="17">c &gt;= 1</label>
@@ -327,8 +343,7 @@ d_aux = 0</label>
 			<label kind="guard" x="-671" y="-93">x2 &gt; V_max &amp;&amp;
 c &gt;= 1</label>
 			<label kind="assignment" x="-671" y="-51">number_deaths += 1,
-x1 = 0.35,
-x2 = 15.0,
+initialize(),
 c = 0</label>
 			<nail x="-518" y="-34"/>
 			<nail x="-518" y="-76"/>
@@ -339,8 +354,7 @@ c = 0</label>
 			<label kind="guard" x="-510" y="-203">x2 &lt; V_min &amp;&amp; 
 c &gt;= 1</label>
 			<label kind="assignment" x="-510" y="-161">number_deaths += 1,
-x1 = 0.35,
-x2 = 15.0,
+initialize(),
 c = 0</label>
 			<nail x="-416" y="-76"/>
 			<nail x="-493" y="-76"/>
@@ -351,8 +365,7 @@ c = 0</label>
 			<label kind="guard" x="-391" y="-93">x1 &gt; I_max &amp;&amp;
 c &gt;= 1</label>
 			<label kind="assignment" x="-390" y="-51">number_deaths += 1,
-x1 = 0.35,
-x2 = 15.0,
+initialize(),
 c = 0</label>
 			<nail x="-399" y="-34"/>
 			<nail x="-399" y="-76"/>
@@ -378,45 +391,37 @@ c = 0</label>
 			<target ref="id27"/>
 			<label kind="guard" x="0" y="-119">x&gt;=1</label>
 			<label kind="synchronisation" x="0" y="-102">tick!</label>
-			<label kind="assignment" x="0" y="-85">x=0,
-gridify()</label>
+			<label kind="assignment" x="0" y="-85">x=0</label>
 			<nail x="25" y="-85"/>
 		</transition>
 	</template>
 	<template>
 		<name>Load</name>
-		<location id="id30" x="0" y="0">
-			<label kind="invariant" x="-10" y="17">x_R'==0</label>
+		<location id="id30" x="-34" y="17">
+			<label kind="invariant" x="-68" y="-17">x_R'==0</label>
 		</location>
-		<location id="id31" x="-76" y="0">
+		<location id="id31" x="59" y="17">
 			<committed/>
 		</location>
-		<location id="id32" x="119" y="-17">
-			<committed/>
-		</location>
-		<init ref="id31"/>
-		<transition id="id33" controllable="false">
-			<source ref="id32"/>
-			<target ref="id30"/>
-			<label kind="select" x="76" y="17">i:int[-30,30]</label>
-			<label kind="guard" x="76" y="51">x_R + i &gt;= R_min &amp;&amp; x_R + i &lt;= R_max</label>
-			<label kind="assignment" x="76" y="34">x_R= x_R + i</label>
-			<nail x="127" y="17"/>
-		</transition>
-		<transition id="id34" controllable="false">
-			<source ref="id30"/>
-			<target ref="id32"/>
-			<label kind="synchronisation" x="42" y="-34">tick?</label>
-		</transition>
-		<transition id="id35" controllable="false">
+		<init ref="id30"/>
+		<transition id="id32" controllable="false">
 			<source ref="id31"/>
 			<target ref="id30"/>
-			<label kind="assignment" x="-76" y="-51">x_R=70.0</label>
+			<label kind="assignment" x="-34" y="59">x_R = 
+  R_min &gt;? 
+  x_R - R_fluctuation + random(2*R_fluctuation) 
+  &lt;? R_max</label>
+			<nail x="59" y="93"/>
+		</transition>
+		<transition id="id33" controllable="false">
+			<source ref="id30"/>
+			<target ref="id31"/>
+			<label kind="synchronisation" x="-42" y="42">tick?</label>
 		</transition>
 	</template>
-	<system>//system Converter, Controller, Load, Timer, Monitor;    // Full system
+	<system>system Converter, Controller, Load, Timer, Monitor;    // Full system
 //system Converter, Controller, Timer, Monitor;        // Constant load
-system Converter, Controller, Load, Timer;    // No reset when leaving state space</system>
+//system Converter, Controller, Load, Timer;    // No reset when leaving state space</system>
 	<queries>
 		<option key="--total-runs" value="1500"/>
 		<option key="--max-iterations" value="1"/>
@@ -449,6 +454,10 @@ system Converter, Controller, Load, Timer;    // No reset when leaving state spa
 		</query>
 		<query>
 			<formula>simulate [&lt;=120;1] {x1, Il,Iu, x2, Vl, Vu, V_min,  V_max, I_max} under S2</formula>
+			<comment/>
+		</query>
+		<query>
+			<formula>simulate [&lt;=120;1] {x_R, Rl, Ru, R_min, R_max}</formula>
 			<comment/>
 		</query>
 		<query>
