@@ -5,14 +5,14 @@ import re
 def read_query_results(query_results_dir, output):
     dropped_rows = 0
     # CSV header. Spacings found experimentally.
-    print("     AV;       AP;       GV;       GP;        R;    fired;   deaths;  reward", file=output)
+    print("     AV;       AP;       GV;       GP;       R;      C;    fired;   deaths;  reward; non-discounted", file=output)
     configurations = os.listdir(query_results_dir)
     for configuration in configurations:
-        cell_width = 7 # Min number of characters a data entry should occupy
+        cell_width = 8 # Min number of characters a data entry should occupy
         
         parameters = configuration.split("_")
         parameters = [re.sub(r"[A-Z]+", "", p) for p in parameters]
-        
+        print(parameters)
         results = get_results(query_results_dir, configuration)
         if results == None:
             dropped_rows += 1
@@ -29,6 +29,8 @@ def read_query_results(query_results_dir, output):
 def get_results(base_path, folder):
     full_path = os.path.join(base_path, folder, "out")
     result = []
+    if not os.path.isfile(full_path):
+        return None
     with open(full_path, "r") as f:
         for line in f:
             match = re.findall(r"E\(max\) = (.+)", line)
@@ -37,7 +39,7 @@ def get_results(base_path, folder):
             elif len(match) > 1: 
                 raise Exception(f"Warning: Unexpected output format. \n         Found multiple matches: {match}\n         In file: {full_path}")
 
-    if len(result) != 3:
+    if len(result) != 4:
         print(f"Warning: Unexpected output format. Did not find the expected number of query results.\n         Found: {result}\n         In file: {full_path}")
         return None
 

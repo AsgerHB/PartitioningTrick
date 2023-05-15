@@ -20,7 +20,7 @@ def make_plots(input_file, output_dir):
             plot_learning_rates(df, AP, AV)
             plt.savefig(os.path.join(learning_rates_dir, f"AP{AP}_AV{AV}.png"))
             plt.close()"""
-    for R in [100, 1000, 5000, 10000, 25000]:
+    for R in df["R"].unique():
         plot_agents(df, R)
         plt.savefig(os.path.join(agents_dir, f"R{R}.png"))
         plt.close()
@@ -48,15 +48,15 @@ def plot_learning_rates(df, AP, AV):
 
 def plot_agents(df, R):
     fig, ax = plt.subplots()
-
-    ax.set_yscale('log')
+    plt.ylim([0, 2000])
+    #ax.set_yscale('log')
     fig.set_figheight(8)
     fig.set_figwidth(12)
 
     df = df.sort_values(by=['gamma'])
 
     
-    df1 = df[(df["R"] == R)]
+    """df1 = df[(df["R"] == R)]
     df1 = df1[["gamma", "reward"]].groupby('gamma').min()
     print(df1) 
     ax = df1.plot(ax=ax, y="reward", ylabel="reward", label=f"MIN")
@@ -64,15 +64,28 @@ def plot_agents(df, R):
     df1 = df[(df["R"] == R)]
     df1 = df1[["gamma", "reward"]].groupby('gamma').max()
     ax = df1.plot(ax=ax, y="reward", ylabel="reward", label=f"MAX")
+    """
 
-    df1 = df[(df["R"] == R) & (df["AP"] == 2) & (df["AV"] == 2)]
-    ax = df1.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label=f"Uniform")
+    df1 = df[(df["R"] == R) & (df["AP"] == 3) & (df["AV"] == 3) & (df["C"] == 2)]
+    ax = df1.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label=f"Memoryfull")
 
-    df1 = df[(df["R"] == R) & (df["AP"] == -1) & (df["AV"] == -1)]
+    df1 = df[(df["R"] == R) & (df["AP"] == -1) & (df["AV"] == -2) & (df["C"] == -1)]
+    ax = df1.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label=f"energyMIN")
+
+    df1 = df[(df["R"] == R) & (df["AP"] == 1) & (df["AV"] == -3) & (df["C"] == 1)]
+    ax = df1.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label=f"energyMAX")
+
+    df1 = df[(df["R"] == R) & (df["AP"] == 2) & (df["AV"] == 2) & (df["C"] == 2)]
+    ax = df1.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label=f"Uniform+Psample")
+
+    df1 = df[(df["R"] == R) & (df["AP"] == 2) & (df["AV"] == 2) & (df["C"] == 0)]
+    ax = df1.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label=f"Uniform+Pavg")
+
+    df1 = df[(df["R"] == R) & (df["AP"] == -1) & (df["AV"] == -1) & (df["C"] == -1)]
     ax = df1.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label=f"Lower,Lower")
 
-    df1 = df[(df["R"] == R) & (df["AP"] == 1) & (df["AV"] == 1)]
-    ax = df1.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label=f"UpperUpper")
+    df1 = df[(df["R"] == R) & (df["AP"] == 1) & (df["AV"] == 1) & (df["C"] == 1)]
+    ax = df1.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label=f"Upper,Upper")
     ax.set_xlabel("1/delta")
 
 if __name__ == "__main__":
