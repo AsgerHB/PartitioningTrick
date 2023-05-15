@@ -1,0 +1,464 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.5//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_5.dtd'>
+<nta>
+	<declaration>/**
+Karamanakos, P., Geyer, T., Manias, S.: Direct voltage control of dc–dc boost converters using enumeration-based model predictive control. IEEE Transactions on Power Electronics 29(2), 968–978 (2014)
+*/
+
+/**
+*** Model Declarations
+**/
+
+// Place global declarations here.
+broadcast chan tick, tock;
+broadcast chan on, off;
+urgent broadcast chan urg;
+clock time;
+// State
+clock x1 = 0.35; // Current, I
+clock x2 = 15.0; // Voltage, V
+clock x_R = 73.0; // Resistance (system load), R
+
+clock dist;     // Accumulated distance
+
+int switches;
+int number_deaths; 
+
+// Consupmtion. The output resistance fluctuates every microsecond.
+const double R_fluctuation = 30;
+const int R_min = 30;
+const int R_max = 200;
+
+
+const double x_L = 450e-6;  // capacitor
+const double x_RL = 0.3;   
+const double x_Co = 220e-6; 
+const double x_vs = 10.0;  // input voltage
+
+// Reference values. Optimize to stay as close as possible
+const double x1ref = 0.35;
+const double x2ref = 15.0;
+
+const double scale = 1.0/0.00005;    // Time scale; microseconds
+
+
+/**
+*** Gridification 
+**/
+
+// helper structure for holding pointers
+typedef struct {
+    int32_t l;
+    int32_t h;
+    
+} ptr_t;
+
+// allows us to get values from ENV, makes scripting experiments easier
+import "libc.so.6" {
+    ptr_t getenv(const string&amp; s);
+    int atoi(ptr_t ptr);
+};
+
+// The state space is partitioned into uniformly sized boxes of size GRID_I*GRID_R*GRID_R
+// Partitions are addressed by their index for each axis. Since the state space is bounded there is only a finite amount of partitions.
+double GRID_I = 0.1;
+double GRID_V = 0.1;
+double GRID_R = 0.1; // R is represented as an integer in [30;200]
+
+// Whether to pick a completely random initial state.
+bool randomizeInitial = false;
+
+// PARAM: Possible initial state when randomizing completely
+const double I_min = 0;
+const double I_max = 4;
+const double V_min = 14;
+const double V_max = 16;
+
+// Indices of the partition which contain I, V and R.
+int iI, iV, iR;
+
+// (l)ower and (u)pper bounds
+double Il, Iu, Vl, Vu, Rl, Ru;
+
+// agents for picking successor in each dimension
+const int LOWER = -1;
+const int MID = 0;
+const int UPPER = 1;
+const int UNIFORM = 2;
+const int MEMORYFULL = 3;
+
+int AGENT_I = UNIFORM;
+int AGENT_V = UNIFORM;
+int AGENT_R = UNIFORM;
+int SAMPLED_COST = MID;
+
+void gridify()
+{
+    iI = fint(floor(x1/GRID_I));
+    iV = fint(floor(x2/GRID_V));
+    iR = fint(floor(x_R/GRID_R));
+
+    Il = iI*GRID_I;
+    Iu = Il + GRID_I;
+    Vl = iV*GRID_V;
+    Vu = Vl + GRID_V;
+    Rl = iR*GRID_R;
+    Ru = Rl + GRID_R;
+
+    if(AGENT_I == UNIFORM)      x1 = Il + random(GRID_I);
+    else if(AGENT_I == LOWER)   x1 = Il;
+    else if(AGENT_I ==  UPPER)  x1 = Iu;
+    else if(AGENT_I ==  MID)    x1 = (Il + Iu) / 2.0;
+    // else fallthrough to memoryfull
+
+    if(AGENT_V == UNIFORM)      x2 = Vl + random(GRID_V);
+    else if(AGENT_V == LOWER)   x2 = Vl;
+    else if(AGENT_V ==  UPPER)  x2 = Vu;
+    else if(AGENT_V ==  MID)    x2 = (Vl + Vu) / 2.0;
+    // else fallthrough to memoryfull
+
+    if(AGENT_R == UNIFORM)      x_R = Rl + random(GRID_R + 1);
+    else if(AGENT_R == LOWER)   x_R = Rl;
+    else if(AGENT_R ==  UPPER)  x_R = Ru;
+    else if(AGENT_R ==  MID)    x_R = (Rl + Ru) / 2.0;
+    // else fallthrough to memoryfull
+}
+
+double partition_cost() {
+    int iV;
+    double Vl, Vu;
+    iV = fint(floor(x2/GRID_V));
+    Vl = iV*GRID_V;
+    Vu = Vl + GRID_V;
+    if(SAMPLED_COST == UNIFORM)
+        return fabs(x1 - x1ref) + fabs(x2 - x2ref);
+    if(SAMPLED_COST == LOWER)
+        return fabs(Il - x1ref) + fabs(Vl - x2ref);
+    if(SAMPLED_COST == UPPER)
+        return fabs(Iu - x1ref) + fabs(Vu - x2ref);
+    // TODO: sampling cost based on best- or worst-case point in partition
+    return fabs((Il + Iu)/2.0 - x1ref) + fabs((Vl + Vu)/2 + x2ref);
+}
+
+void initialize()
+{
+    ptr_t env = getenv("GRID_I");
+    if(env.l || env.h)
+        GRID_I = (I_max - I_min) / atoi(env);
+    env = getenv("GRID_V");
+    if(env.l || env.h)
+        GRID_V = (V_max - V_min) / atoi(env);
+    env = getenv("GRID_R");
+    if(env.l || env.h)
+        GRID_R = (V_max - V_min) / atoi(env);
+    env = getenv("AGENT_I");
+    if(env.l || env.h)
+        AGENT_I = atoi(env);
+    env = getenv("AGENT_V");
+    if(env.l || env.h)
+        AGENT_V = atoi(env);
+    env = getenv("AGENT_R");
+    if(env.l || env.h)
+        AGENT_R = atoi(env);
+
+    env = getenv("SAMPLED_COST");
+    if(env.l || env.h)
+        SAMPLED_COST = atoi(env);
+                
+    env = getenv("RANDOM_INITIAL");
+    if(env.l || env.h)
+        randomizeInitial = atoi(env);
+    if (randomizeInitial)
+    {
+        x1 = I_min + random(I_max - I_min);
+        x2 = V_min + random(V_max - V_min);
+        x_R = R_min + floor(random(R_max - R_min + 1));
+    }
+    else
+    {
+        x1 = 0.30;
+        x2 = 15.0;
+        x_R = 30;
+    }
+    gridify();
+}
+</declaration>
+	<template>
+		<name x="5" y="5">Converter</name>
+		<declaration>// Place local declarations here.
+
+
+double A1[2][2];
+double A2[2][2];
+double A3[2][2];
+
+double B1[2];
+double B2[2];
+double B3[2];</declaration>
+		<location id="id0" x="0" y="0">
+			<name x="-51" y="-17">d1u1</name>
+			<label kind="invariant" x="-93" y="-102">x1'==(((-x_RL/x_L)*x1)+(x_vs/x_L))/scale&amp;&amp;
+x2'==(-(1.0/(x_Co*x_R))*x2)/scale</label>
+			<label kind="exponentialrate" x="-17" y="8">1</label>
+			<label kind="comments" x="-93" y="-144">X'=A2*x+B,
+d_aux = 1</label>
+		</location>
+		<location id="id1" x="229" y="0">
+			<name x="212" y="-34">d1u0</name>
+			<label kind="invariant" x="280" y="-102">x1'==((-x_RL/x_L)*x1+(-1.0/x_L)*x2+(x_vs/x_L))/scale&amp;&amp;
+x2'==((1.0/x_Co)*x1+(-1.0/(x_Co*x_R))*x2)/scale</label>
+			<label kind="exponentialrate" x="212" y="17">1</label>
+			<label kind="comments" x="280" y="-144">X'=A1*x+B,
+d_aux = 1</label>
+		</location>
+		<location id="id2" x="229" y="153">
+			<name x="212" y="161">d0u0</name>
+			<label kind="invariant" x="255" y="136">x1'==0&amp;&amp;
+x2'==((-1.0/(x_Co*x_R))*x2)/scale</label>
+			<label kind="exponentialrate" x="221" y="204">1</label>
+			<label kind="comments" x="255" y="204">X'=A2*x+B,
+d_aux = 0</label>
+		</location>
+		<location id="id3" x="127" y="0">
+			<name x="110" y="17">pd1u1</name>
+			<urgent/>
+		</location>
+		<location id="id4" x="348" y="0">
+			<name x="365" y="-8">pd1u0</name>
+			<urgent/>
+		</location>
+		<location id="id5" x="0" y="153">
+			<name x="-68" y="144">pu0d0</name>
+			<urgent/>
+		</location>
+		<init ref="id0"/>
+		<transition id="id6" controllable="false">
+			<source ref="id1"/>
+			<target ref="id4"/>
+			<label kind="synchronisation" x="272" y="-17">tock?</label>
+		</transition>
+		<transition id="id7" controllable="false">
+			<source ref="id4"/>
+			<target ref="id1"/>
+			<label kind="synchronisation" x="272" y="17">off?</label>
+			<nail x="289" y="17"/>
+		</transition>
+		<transition id="id8" controllable="false">
+			<source ref="id5"/>
+			<target ref="id2"/>
+			<label kind="synchronisation" x="102" y="178">off?</label>
+			<nail x="119" y="178"/>
+		</transition>
+		<transition id="id9" controllable="false">
+			<source ref="id2"/>
+			<target ref="id5"/>
+			<label kind="synchronisation" x="93" y="136">tock?</label>
+		</transition>
+		<transition id="id10" controllable="false">
+			<source ref="id3"/>
+			<target ref="id0"/>
+			<label kind="synchronisation" x="42" y="25">on?</label>
+			<nail x="59" y="17"/>
+		</transition>
+		<transition id="id11" controllable="false">
+			<source ref="id0"/>
+			<target ref="id3"/>
+			<label kind="synchronisation" x="42" y="-17">tock?</label>
+		</transition>
+		<transition id="id12" controllable="false">
+			<source ref="id4"/>
+			<target ref="id0"/>
+			<label kind="synchronisation" x="127" y="-59">on?</label>
+			<label kind="assignment" x="102" y="-42">switches++</label>
+			<nail x="348" y="-42"/>
+			<nail x="0" y="-42"/>
+		</transition>
+		<transition id="id13" controllable="false">
+			<source ref="id5"/>
+			<target ref="id0"/>
+			<label kind="synchronisation" x="0" y="59">on?</label>
+			<label kind="assignment" x="0" y="76">switches++</label>
+		</transition>
+		<transition id="id14" controllable="false">
+			<source ref="id1"/>
+			<target ref="id2"/>
+			<label kind="guard" x="238" y="59">x1&lt;=0</label>
+			<label kind="synchronisation" x="238" y="76">urg!</label>
+		</transition>
+		<transition id="id15" controllable="false">
+			<source ref="id3"/>
+			<target ref="id1"/>
+			<label kind="synchronisation" x="153" y="-17">off?</label>
+			<label kind="assignment" x="136" y="0">switches++</label>
+		</transition>
+	</template>
+	<template>
+		<name>Controller</name>
+		<location id="id16" x="-85" y="0">
+			<committed/>
+		</location>
+		<location id="id17" x="-85" y="119">
+			<label kind="invariant" x="-161" y="136">dist'==fabs(x2-x2ref)</label>
+		</location>
+		<init ref="id17"/>
+		<transition id="id18">
+			<source ref="id16"/>
+			<target ref="id17"/>
+			<label kind="synchronisation" x="-25" y="102">off!</label>
+			<nail x="-25" y="0"/>
+			<nail x="-25" y="119"/>
+		</transition>
+		<transition id="id19">
+			<source ref="id16"/>
+			<target ref="id17"/>
+			<label kind="synchronisation" x="-170" y="102">on!</label>
+			<nail x="-144" y="0"/>
+			<nail x="-144" y="119"/>
+		</transition>
+		<transition id="id20" controllable="false">
+			<source ref="id17"/>
+			<target ref="id16"/>
+			<label kind="synchronisation" x="-85" y="76">tock?</label>
+			<label kind="assignment" x="-85" y="59">gridify()</label>
+		</transition>
+	</template>
+	<template>
+		<name>Monitor</name>
+		<declaration>clock c;</declaration>
+		<location id="id21" x="-459" y="-34">
+			<label kind="invariant" x="-493" y="-17">c &lt;= 1</label>
+		</location>
+		<init ref="id21"/>
+		<transition id="id22" controllable="false">
+			<source ref="id21"/>
+			<target ref="id21"/>
+			<label kind="guard" x="-484" y="17">c &gt;= 1</label>
+			<label kind="assignment" x="-484" y="34">c = 0</label>
+			<nail x="-484" y="17"/>
+			<nail x="-433" y="17"/>
+		</transition>
+		<transition id="id23" controllable="false">
+			<source ref="id21"/>
+			<target ref="id21"/>
+			<label kind="guard" x="-671" y="-93">x2 &gt; V_max &amp;&amp;
+c &gt;= 1</label>
+			<label kind="assignment" x="-671" y="-51">number_deaths += 1,
+initialize(),
+c = 0</label>
+			<nail x="-518" y="-34"/>
+			<nail x="-518" y="-76"/>
+		</transition>
+		<transition id="id24" controllable="false">
+			<source ref="id21"/>
+			<target ref="id21"/>
+			<label kind="guard" x="-510" y="-203">x2 &lt; V_min &amp;&amp; 
+c &gt;= 1</label>
+			<label kind="assignment" x="-510" y="-161">number_deaths += 1,
+initialize(),
+c = 0</label>
+			<nail x="-416" y="-76"/>
+			<nail x="-493" y="-76"/>
+		</transition>
+		<transition id="id25" controllable="false">
+			<source ref="id21"/>
+			<target ref="id21"/>
+			<label kind="guard" x="-391" y="-93">x1 &gt; I_max &amp;&amp;
+c &gt;= 1</label>
+			<label kind="assignment" x="-390" y="-51">number_deaths += 1,
+initialize(),
+c = 0</label>
+			<nail x="-399" y="-34"/>
+			<nail x="-399" y="-76"/>
+		</transition>
+	</template>
+	<template>
+		<name>Timer</name>
+		<declaration>clock x;</declaration>
+		<location id="id26" x="25" y="0">
+			<label kind="invariant" x="15" y="17">x&lt;=1</label>
+		</location>
+		<location id="id27" x="-76" y="-85">
+			<urgent/>
+		</location>
+		<init ref="id26"/>
+		<transition id="id28" controllable="false">
+			<source ref="id27"/>
+			<target ref="id26"/>
+			<label kind="synchronisation" x="-76" y="-42">tock!</label>
+		</transition>
+		<transition id="id29" controllable="false">
+			<source ref="id26"/>
+			<target ref="id27"/>
+			<label kind="guard" x="0" y="-119">x&gt;=1</label>
+			<label kind="synchronisation" x="0" y="-102">tick!</label>
+			<label kind="assignment" x="0" y="-85">x=0</label>
+			<nail x="25" y="-85"/>
+		</transition>
+	</template>
+	<template>
+		<name>Load</name>
+		<location id="id30" x="-34" y="17">
+			<label kind="invariant" x="-68" y="-17">x_R'==0</label>
+		</location>
+		<location id="id31" x="59" y="17">
+			<committed/>
+		</location>
+		<init ref="id30"/>
+		<transition id="id32" controllable="false">
+			<source ref="id31"/>
+			<target ref="id30"/>
+			<label kind="assignment" x="-34" y="59">x_R = 
+  R_min &gt;? 
+  x_R - R_fluctuation + random(2*R_fluctuation) 
+  &lt;? R_max</label>
+			<nail x="59" y="93"/>
+		</transition>
+		<transition id="id33" controllable="false">
+			<source ref="id30"/>
+			<target ref="id31"/>
+			<label kind="synchronisation" x="-42" y="42">tick?</label>
+		</transition>
+	</template>
+	<system>system Converter, Controller, Load, Timer, Monitor;    // Full system
+//system Converter, Controller, Timer, Monitor;        // Constant load
+//system Converter, Controller, Load, Timer;    // No reset when leaving state space</system>
+	<queries>
+		<option key="--total-runs" value="1500"/>
+		<option key="--max-iterations" value="1"/>
+		<option key="--good-runs" value="1500"/>
+		<option key="--eval-runs" value="1500"/>
+		<option key="--runs-pr-state" value="1500"/>
+		<query>
+			<formula>strategy S = minE (dist) [&lt;=120] {floor(x1/GRID_I)*GRID_I, floor(x2/GRID_V)*GRID_V, floor(x_R/GRID_R)*GRID_R} -&gt; {}: &lt;&gt; time &gt;= 120</formula>
+			<comment/>
+		</query>
+		<query>
+			<formula>E[&lt;=120;1000] (max:dist) under S</formula>
+			<comment/>
+		</query>
+		<query>
+			<formula>E[&lt;=120;1000] (max:number_deaths) under S</formula>
+			<comment/>
+		</query>
+		<query>
+			<formula>/* E[&lt;=120;1000] (max:disc_reward) under S */</formula>
+			<comment/>
+		</query>
+		<query>
+			<formula>/* E[&lt;=120;1000] (max:reward) under S */</formula>
+			<comment/>
+		</query>
+		<query>
+			<formula/>
+			<comment/>
+		</query>
+		<query>
+			<formula/>
+			<comment/>
+		</query>
+		<query>
+			<formula/>
+			<comment/>
+		</query>
+	</queries>
+</nta>
