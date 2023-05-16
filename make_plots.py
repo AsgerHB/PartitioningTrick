@@ -10,6 +10,7 @@ def make_plots(experiment, input_file, output_dir):
     learning_rates_dir.mkdir(parents=True, exist_ok=True)
     agents_dir = Path(output_dir, "agents")
     agents_dir.mkdir(parents=True, exist_ok=True)
+    exported_to = []
 
     df = pandas.read_csv(input_file, sep="\s*;\s*", engine='python') # Dumbass csv-parser doesn't know to trim whitespace by itself!
     df = preprocess(df, experiment)
@@ -31,8 +32,11 @@ def make_plots(experiment, input_file, output_dir):
             plot_agents_DC(df, R)
         else:
             raise Exception("Not implemented")
-        plt.savefig(Path(agents_dir, f"R{R}.png"))
+        path = Path(agents_dir, f"R{R}.png")
+        plt.savefig(path)
+        exported_to.append(str(path))
         plt.close()
+    return exported_to
 
 def preprocess(df, experiment):
     if experiment == "BB":
@@ -111,14 +115,14 @@ def plot_agents_DC(df, R):
 
     df = df.sort_values(by=['gamma'])
 
-    df1 = df[(df["R"] == R)]
-    print(df1)
-    df1 = df1[["gamma", "reward"]].groupby('gamma').min()
-    ax = df1.plot(ax=ax, y="reward", ylabel="reward", label=f"MIN")
-
-    df1 = df[(df["R"] == R)]
-    df1 = df1[["gamma", "reward"]].groupby('gamma').max()
-    ax = df1.plot(ax=ax, y="reward", ylabel="reward", label=f"MAX")
+    df2 = df[(df["R"] == R)]
+    df2 = df2.groupby(["AI", "AV", "AR", "C"])
+    for (keys, group) in df2:
+        group = group[["gamma", "reward"]]
+        group = group.sort_values(by=["gamma"])
+        label = [f"{k}{v}" for k, v in zip(["AI", "AV", "AR", "C"], keys)]
+        label = "_".join(label)
+        ax = group.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label=label)
 
     ax.set_xlabel("1/gamma")
 
@@ -129,5 +133,7 @@ if __name__ == "__main__":
     parser.add_argument("--input-file", help="Path to csv file which stores the data.", default="experiment/DC.csv")
     parser.add_argument("--output-dir", help="Output dir.", default="experiment/DC")
     args = parser.parse_args()
-
-    make_plots(args.experiment, args.input_file, args.output_dir)
+    
+    exported_to = make_plots(args.experiment, args.input_file, args.output_dir)
+    [print(x) for x in exported_to]
+    print("📈"*len(exported_to))
