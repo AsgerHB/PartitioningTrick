@@ -2,40 +2,54 @@
 import os
 import pandas
 import random
+from pathlib import Path
 from matplotlib import pyplot as plt
 
-def make_plots(input_file, output_dir):
-    learning_rates_dir = os.path.join(output_dir, "learning_rates")
-    if not os.path.exists(learning_rates_dir):
-        os.mkdir(learning_rates_dir)
-    agents_dir = os.path.join(output_dir, "agents")
-    if not os.path.exists(agents_dir):
-        os.mkdir(agents_dir)
+def make_plots(experiment, input_file, output_dir):
+    learning_rates_dir = Path(output_dir, "learning_rates")
+    learning_rates_dir.mkdir(parents=True, exist_ok=True)
+    agents_dir = Path(output_dir, "agents")
+    agents_dir.mkdir(parents=True, exist_ok=True)
 
     df = pandas.read_csv(input_file, sep="\s*;\s*", engine='python') # Dumbass csv-parser doesn't know to trim whitespace by itself!
-    df = preprocess(df)
+    df = preprocess(df, experiment)
     
     """for AP in [-1, 0, 1, 2, 3]:
         for AV in [-1, 0, 1, 2, 3]:
-            plot_learning_rates(df, AP, AV)
-            plt.savefig(os.path.join(learning_rates_dir, f"AP{AP}_AV{AV}.png"))
+            if experiment == "BB":
+                plot_learning_rates_BB(df, AP, AV)
+            else:
+                raise Exception("Not implemented")
+
+            plt.savefig(Path(learning_rates_dir, f"AP{AP}_AV{AV}.png"))
             plt.close()"""
+
     for R in df["R"].unique():
-        plot_agents(df, R)
-        plt.savefig(os.path.join(agents_dir, f"R{R}.png"))
+        if experiment == "BB":
+            plot_agents_BB(df, R)
+        elif experiment == "DC":
+            plot_agents_DC(df, R)
+        else:
+            raise Exception("Not implemented")
+        plt.savefig(Path(agents_dir, f"R{R}.png"))
         plt.close()
 
-def preprocess(df):
-    df["gamma"] = df["GP"]/15
-    df["gamma2"] = df["GV"]/(2*15)
-    df["sanity_check"] = df["gamma"] == df["gamma2"]
-    if not all(df["sanity_check"]):
-        raise Exception("Mismatch between GV and GP. It was not the case that 15/GP == 30/GV. (unknown row)")
+def preprocess(df, experiment):
+    if experiment == "BB":
+        df["gamma"] = df["GP"]/15
+        df["gamma2"] = df["GV"]/(2*15)
+        df["sanity_check"] = df["gamma"] == df["gamma2"]
+        if not all(df["sanity_check"]):
+            raise Exception("Mismatch between GV and GP. It was not the case that 15/GP == 30/GV. (unknown row)")
+    elif experiment == "DC": 
+        df["gamma"] = df["GV"]/15
+    else: 
+        raise Exception("Not implemented")
 
     #df["1/gamma"] = 1/df["gamma"]
     return df
 
-def plot_learning_rates(df, AP, AV):
+def plot_learning_rates_BB(df, AP, AV):
 
     df = df[(df["AP"] == AP) & (df["AV"] == AV)]
     df = df.sort_values(by=['gamma'])
@@ -46,7 +60,7 @@ def plot_learning_rates(df, AP, AV):
     for key, grouping in df.groupby(["R"]):
         ax = grouping.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label=f"R={key[0]}")
 
-def plot_agents(df, R):
+def plot_agents_BB(df, R):
     fig, ax = plt.subplots()
     plt.ylim([0, 2000])
     #ax.set_yscale('log')
@@ -88,11 +102,32 @@ def plot_agents(df, R):
     ax = df1.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label=f"Upper,Upper")
     ax.set_xlabel("1/delta")
 
+def plot_agents_DC(df, R):
+    fig, ax = plt.subplots()
+    #plt.ylim([0, 2000])
+    #ax.set_yscale('log')
+    fig.set_figheight(8)
+    fig.set_figwidth(12)
+
+    df = df.sort_values(by=['gamma'])
+
+    df1 = df[(df["R"] == R)]
+    print(df1)
+    df1 = df1[["gamma", "reward"]].groupby('gamma').min()
+    ax = df1.plot(ax=ax, y="reward", ylabel="reward", label=f"MIN")
+
+    df1 = df[(df["R"] == R)]
+    df1 = df1[["gamma", "reward"]].groupby('gamma').max()
+    ax = df1.plot(ax=ax, y="reward", ylabel="reward", label=f"MAX")
+
+    ax.set_xlabel("1/gamma")
+
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input-file", help="Path to csv file which stores the data.", default="~/Q-PART/experiment/BB.csv")
-    parser.add_argument("--output-dir", help="Output dir.", default="~/Q-PART/experiment/BB")
+    parser.add_argument("--experiment", help="E.g. BB, DC...", default="DC")
+    parser.add_argument("--input-file", help="Path to csv file which stores the data.", default="experiment/DC.csv")
+    parser.add_argument("--output-dir", help="Output dir.", default="experiment/DC")
     args = parser.parse_args()
 
-    make_plots(args.input_file, args.output_dir)
+    make_plots(args.experiment, args.input_file, args.output_dir)
