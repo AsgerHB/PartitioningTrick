@@ -13,7 +13,7 @@ Strategies can be viewed with "x StrategyVisualisation.jl" for x ∈ {RW} using 
 
  ## Magic Numbers
 
- Picking a new state within partition:
+ Picking a new state within partition: (`Ax` parameters)
 
 | value | meaning 
 | ---   |  ---
@@ -25,11 +25,11 @@ Strategies can be viewed with "x StrategyVisualisation.jl" for x ∈ {RW} using 
 | -2    | Least energy preserved for bouncing ball
 | -3    | Most energy preserved for bouncing ball
 
-Observed reward:
+Observed reward: (`C` parameter)
 
 | value | meaning
 | ---   | ---
-| 2     | Sample (actual cost)
-| 1     | Upper bound
-| 0     | Middle
-| -1    | Lower bound
+| 2     | Sampled
+| 1     | Best partition cost
+| 0     | Average partition cost
+| -1    | Worst partition cost

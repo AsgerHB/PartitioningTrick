@@ -48,6 +48,8 @@ const double scale = 1.0/0.00005;    // Time scale; microseconds
 *** Gridification 
 **/
 
+// Change in naming: I ~ x1, V ~ x2, R ~ x_R
+
 // helper structure for holding pointers
 typedef struct {
     int32_t l;
@@ -85,6 +87,8 @@ int32 iI, iV, iR;
 double Il, Iu, Vl, Vu, Rl, Ru;
 
 // agents for picking successor in each dimension
+const int BEST = -3;
+const int WORST = -2;
 const int LOWER = -1;
 const int MID = 0;
 const int UPPER = 1;
@@ -94,7 +98,13 @@ const int MEMORYFULL = 3;
 int AGENT_I = UNIFORM;
 int AGENT_V = UNIFORM;
 int AGENT_R = UNIFORM;
-int SAMPLED_COST = MID;
+ 
+const int SAMPLED = 2; // From whatever sample was taken
+const int HIGHEST = 1; // Highest reward
+const int AVG = 0; 
+const int LOWEST = -1;
+
+int SAMPLED_COST = 1;
 
 void gridify()
 {
@@ -110,22 +120,68 @@ void gridify()
     Ru = Rl + GRID_R;
 
     if(AGENT_I == UNIFORM)      x1 = Il + random(GRID_I);
+    else if(AGENT_I == UPPER)   x1 = Iu;
+    else if(AGENT_I == MID)     x1 = (Il + Iu) / 2.0;
     else if(AGENT_I == LOWER)   x1 = Il;
-    else if(AGENT_I ==  UPPER)  x1 = Iu;
-    else if(AGENT_I ==  MID)    x1 = (Il + Iu) / 2.0;
+    else if(AGENT_I == WORST) 
+    { // A high current will cause a higher voltage
+        if(x2 &lt; x2ref)
+            x1 = Il;
+        else 
+            x1 = Iu;
+    } 
+    else if(AGENT_V == BEST)
+    { // A high current will cause a higher voltage
+        if(x2 &lt; x2ref)
+            x1 = Iu;
+        else 
+            x1 = Il;
+    } 
     // else fallthrough to memoryfull
 
     if(AGENT_V == UNIFORM)      x2 = Vl + random(GRID_V);
     else if(AGENT_V == LOWER)   x2 = Vl;
     else if(AGENT_V ==  UPPER)  x2 = Vu;
     else if(AGENT_V ==  MID)    x2 = (Vl + Vu) / 2.0;
+    else if(AGENT_V == WORST) 
+    {
+        if(fabs(Vl - x2ref) &lt; fabs(Vu - x2ref))
+            x2 = Vu;
+        else 
+            x2 = Vl;
+    } 
+    else if(AGENT_V == BEST)
+    {
+        if(fabs(Vl - x2ref) &lt; fabs(Vu - x2ref))
+            x2 = Vl;
+        else 
+            x2 = Vu;
+    } 
     // else fallthrough to memoryfull
 
     if(AGENT_R == UNIFORM)      x_R = Rl + random(GRID_R + 1);
-    else if(AGENT_R == LOWER)   x_R = Rl;
     else if(AGENT_R ==  UPPER)  x_R = Ru;
     else if(AGENT_R ==  MID)    x_R = (Rl + Ru) / 2.0;
+    else if(AGENT_R == LOWER)   x_R = Rl;
+    else if(AGENT_R == WORST)
+    { // A high resistance makes the voltage drop faster
+        if(x2 &lt; x2ref)
+            x_R = Ru;
+        else 
+            x_R = Rl;
+    } 
+    else if(AGENT_R == BEST)
+    { // A high resistance makes the voltage drop faster
+        if(x2 &lt; x2ref)
+            x_R = Rl;
+        else 
+            x_R = Ru;
+    } 
     // else fallthrough to memoryfull
+}
+
+double get_reward(double voltage) {
+    return -pow(voltage - x2ref, 2);
 }
 
 double partition_cost() {
@@ -134,12 +190,13 @@ double partition_cost() {
     iV = fint(floor(x2/GRID_V));
     Vl = iV*GRID_V;
     Vu = Vl + GRID_V;
-    if(SAMPLED_COST == 2)
-        return pow(x2 - x2ref, 2);
-    if(SAMPLED_COST == -1)
-        return pow(Vl - x2ref, 2);
-    if(SAMPLED_COST == 1)
-        return pow(Vu - x2ref, 2);
+    if(SAMPLED_COST == SAMPLED)
+        return get_reward(x2);
+    if(SAMPLED_COST == LOWEST)
+        return get_reward(Vl) &lt;? get_reward(Vu);
+    if(SAMPLED_COST == HIGHEST)
+        return get_reward(Vl) &gt;? get_reward(Vu);
+    // else fallthrough avg
     return pow((Vl + Vu)/2 - x2ref, 2);
 }
 
