@@ -115,16 +115,37 @@ def plot_agents_DC(df, R):
 
     df = df.sort_values(by=['gamma'])
 
-    df2 = df[(df["R"] == R)]
+    """df2 = df[(df["R"] == R)]
     df2 = df2.groupby(["AI", "AV", "AR", "C"])
     for (keys, group) in df2:
         group = group[["gamma", "reward"]]
         group = group.sort_values(by=["gamma"])
         label = [f"{k}{v}" for k, v in zip(["AI", "AV", "AR", "C"], keys)]
         label = "_".join(label)
-        ax = group.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label=label)
+        ax = group.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label=label)"""
 
-    ax.set_xlabel("1/gamma")
+    df1 = df[(df["R"] == R) & (df["AI"] == 3) & (df["AV"] == 3) & (df["AR"] == 3) & (df["C"] == 2)]
+    ax = df1.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label=f"Memoryfull") # Historical + sampled cost
+
+    df1 = df[(df["R"] == R) & (df["AI"] == -2) & (df["AV"] == -2) & (df["AR"] == -2) & (df["C"] == -1)]
+    ax = df1.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label=f"Worst+worst cost")
+
+    df1 = df[(df["R"] == R) & (df["AI"] == -3) & (df["AV"] == -3) & (df["AR"] == -3) & (df["C"] == 1)]
+    ax = df1.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label=f"Best+best cost")
+
+    df1 = df[(df["R"] == R) & (df["AI"] == 2) & (df["AV"] == 2) & (df["AR"] == 2) & (df["C"] == 2)]
+    ax = df1.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label=f"Uniform+sampled cost")
+
+    df1 = df[(df["R"] == R) & (df["AI"] == 2) & (df["AV"] == 2) & (df["AR"] == 2) & (df["C"] == 0)]
+    ax = df1.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label=f"Uniform+static cost")
+
+    df1 = df[(df["R"] == R) & (df["AI"] == -1) & (df["AV"] == -1) & (df["AR"] == -1) & (df["C"] == -1)]
+    ax = df1.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label=f"Lower+worst cost")
+
+    df1 = df[(df["R"] == R) & (df["AI"] == 1) & (df["AV"] == 1) & (df["AR"] == 1) & (df["C"] == 1)]
+    ax = df1.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label=f"Upper+best cost")
+
+    ax.set_xlabel("1/delta")
 
 if __name__ == "__main__":
     import argparse
