@@ -104,7 +104,7 @@ const int HIGHEST = 1; // Highest reward
 const int AVG = 0; 
 const int LOWEST = -1;
 
-int SAMPLED_COST = 1;
+int SAMPLED_COST = LOWEST;
 
 void gridify()
 {
@@ -197,7 +197,7 @@ double partition_cost() {
     if(SAMPLED_COST == HIGHEST)
         return get_reward(Vl) &gt;? get_reward(Vu);
     // else fallthrough avg
-    return pow((Vl + Vu)/2 - x2ref, 2);
+    return -pow((Vl + Vu)/2 - x2ref, 2);
 }
 
 void initialize()
@@ -488,17 +488,17 @@ c = 0</label>
 //system Converter, Controller, Timer, Monitor;        // Constant load
 //system Converter, Controller, Load, Timer;    // No reset when leaving state space</system>
 	<queries>
-		<option key="--total-runs" value="1500"/>
+		<option key="--total-runs" value="100"/>
 		<option key="--max-iterations" value="1"/>
-		<option key="--good-runs" value="1500"/>
-		<option key="--eval-runs" value="1500"/>
-		<option key="--runs-pr-state" value="1500"/>
+		<option key="--good-runs" value="100"/>
+		<option key="--eval-runs" value="100"/>
+		<option key="--runs-pr-state" value="100"/>
 		<query>
 			<formula>strategy S = minE (dist) [&lt;=120] {floor(x1/GRID_I)*GRID_I, floor(x2/GRID_V)*GRID_V, floor(x_R/GRID_R)*GRID_R} -&gt; {}: &lt;&gt; time &gt;= 120</formula>
 			<comment/>
 		</query>
 		<query>
-			<formula>E[&lt;=120;1000] (max:dist) under S</formula>
+			<formula>E[&lt;=120;1000] (min:-dist) under S</formula>
 			<comment/>
 		</query>
 		<query>
@@ -506,19 +506,11 @@ c = 0</label>
 			<comment/>
 		</query>
 		<query>
-			<formula>E[&lt;=120;1000] (max:disc_reward) under S</formula>
+			<formula>E[&lt;=120;1000] (min:disc_reward) under S</formula>
 			<comment/>
 		</query>
 		<query>
-			<formula>E[&lt;=120;1000] (max:reward) under S</formula>
-			<comment/>
-		</query>
-		<query>
-			<formula/>
-			<comment/>
-		</query>
-		<query>
-			<formula/>
+			<formula>E[&lt;=120;1000] (min:reward) under S</formula>
 			<comment/>
 		</query>
 	</queries>
