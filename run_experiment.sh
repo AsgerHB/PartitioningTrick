@@ -40,16 +40,16 @@ for RUNS in 5000 10000 ; do #5000 10000 25000 50000 100000 250000 500000 ; do #1
 
         # Best + best cost
         export SAMPLED_COST=1
-        export AGENT_I=-2
-        export AGENT_V=-2
-        export AGENT_R=-2
+        export AGENT_I=-3
+        export AGENT_V=-3
+        export AGENT_R=-3
         $EXECUTOR ./run_single.sh
 
         # Worst + worst cost
         export SAMPLED_COST=-1
-        export AGENT_I=-3
-        export AGENT_V=-3
-        export AGENT_R=-3
+        export AGENT_I=-2
+        export AGENT_V=-2
+        export AGENT_R=-2
         $EXECUTOR ./run_single.sh
 
         # Uniform + static cost
