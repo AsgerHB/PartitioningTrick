@@ -1,4 +1,6 @@
 #!/bin/bash
 
+export NAME=DC
+
 export EXECUTOR="sbatch --out=/dev/null --partition=dhabi -n1 --mem=16G "
-./run_experiment.sh
+./run_$NAME.sh
