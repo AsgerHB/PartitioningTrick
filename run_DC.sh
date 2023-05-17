@@ -78,7 +78,7 @@ for RUNS in 10000; do #5000 10000 25000 50000 100000 250000 500000 ; do
                 for AGENT_V in -1 1 ; do
                     for AGENT_R in -1 1 ; do
                         # same SAMPLE_COST as AGENT_I
-                        export SAMPLED_COST=$AGENT_I
+                        export SAMPLED_COST=$C
                         export AGENT_I=$AGENT_I
                         export AGENT_V=$AGENT_V
                         export AGENT_R=$AGENT_R
