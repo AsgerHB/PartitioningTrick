@@ -1,0 +1,240 @@
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "main"
+%%% End:
+
+% \newcommand{\delay}{\ensuremath{\mathbb{Delay}}\xspace}
+
+\newcommand{\parfunc}{\hookrightarrow}
+\newcommand{\changethis}[1]{{\em {\color{red} #1}\/}}
+\newcommand{\mean}{\mathtt{M}}
+\newcommand{\variance}{\mathtt{V}}
+\newcommand{\welche}{\mathtt{W}}
+\newcommand{\kstest}{\mathtt{KS}}
+\newcommand{\refinetest}{\mathtt{DIF}}
+\newcommand{\cp}{\mathtt{LMS}}
+\newcommand{\cpcnt}{\mathtt{LMSVal}}
+\newcommand{\lowdif}{\triangleleft}
+\newcommand{\highdif}{\triangleright}
+\newcommand{\middif}{\nmid}
+\newcommand{\indif}{\bullet}
+\newcommand{\either}{\bowtie}
+\newcommand{\statsplus}{\oplus}
+\newcommand{\statsmult}{\otimes}
+
+\newcommand{\powerk}{2^{\reals^K}}
+\newcommand{\refine}{\rho}
+\newcommand{\Refine}{\mathtt{R}}
+\newcommand{\splitprob}{\overline{\mathtt{p}}}
+\newcommand{\NDist}{\Xi}
+\newcommand{\ndist}{\xi}
+\newcommand{\stats}{\mathtt{Stats}}
+
+\newcommand{\dee}{\mathrm{d}}
+
+
+\newcommand{\partition}{\mathcal{A}}
+\newcommand{\partitionB}{\mathcal{B}}
+\newcommand{\allpart}{\mathbb{A}}
+
+\newcommand{\cylinder}{\ensuremath{\zeta}}
+
+\newcommand{\nnul}{\mathbb{N}_0}
+
+\newcommand{\delay}{\ensuremath{\text{delay}}\xspace}
+
+\newcommand{\trans}[1]{\stackrel{#1}{\longrightarrow}}
+
+\newcommand{\states}{\mathcal{S}}
+\newcommand{\initial}{s_{init}}
+\newcommand{\reals}{\mathbb{R}}
+\newcommand{\rationals}{\mathbb{Q}}
+\newcommand{\naturals}{\mathbb{N}}
+\newcommand{\mdp}{\mathcal{M}}
+\newcommand{\clocks}{\mathcal{X}}
+\newcommand{\locs}{\mathcal{L}}
+\newcommand{\dist}{\Delta}
+\newcommand{\borel}{\mathcal{B}}
+\newcommand{\borelk}{{\borel(\reals)^K}}
+\newcommand{\run}{\pi}
+\newcommand{\runs}{\Pi}
+\renewcommand{\path}{\bar{\pi}}
+\newcommand{\transitions}{T}
+\newcommand{\density}{\Delta}
+
+\newcommand{\act}{\mathit{Act}}
+\newcommand{\est}{\mathcal{E}}
+\newcommand{\eest}{\hat{\est}}
+\newcommand{\pr}{\mathbb{P}}
+\newcommand{\epr}{\hat{\pr}}
+\newcommand{\freq}{\mathcal{F}}
+\newcommand{\efreq}{\hat{\freq}}
+\newcommand{\reward}{{\color{red} \mathcal{R} \text{ (SHOULD BE COST!)}}}
+\newcommand{\cost}{\mathcal{C}}
+\newcommand{\ecost}{\hat{\cost}}
+\newcommand{\bb}{\mathit{BB}}
+\newcommand{\BB}{\mathbb{B}}
+\newcommand{\eerror}{\mathit{EE}}
+\newcommand{\tree}{\mathcal{T}}
+
+\newcommand{\goal}{\mathcal{G}}
+\newcommand{\apr}[1]{#1_{\sim}}
+
+\newcommand{\cent}{\odot}
+
+
+\newcommand{\ft}[1]{{\small\textsf{#1}}}
+
+\newcommand{\opmod}{\textsc{OpenModelica}\xspace}
+
+\def\checkmark{\tikz\fill[scale=0.4](0,.35) -- (.25,0) -- (1,.7) -- (.25,.15) -- cycle;}
+
+
+\newcommand{\actions}[1]{\ensuremath{\mathtt{A}_{#1}}}
+\newcommand{\attActions}{\ensuremath{\actions{a}}}
+\newcommand{\defActions}{\ensuremath{\actions{d}}}
+\newcommand{\attAct}{\ensuremath{p_a}}
+\newcommand{\defAct}{\ensuremath{p_d}}
+\newcommand{\lang}[2]{\ensuremath{\mathcal{L}(#1,#2)}}
+\newcommand{\langw}[2]{\ensuremath{\mathcal{L}^w(#1,#2)}}
+\newcommand{\R}{\ensuremath{\mathbb{R_{\geq 0}}}}
+\newcommand{\xdashrightarrow}[1]{\ensuremath{\overset{#1}{\dashrightarrow}}}
+\newcommand{\attProf}{\ensuremath{\mu_{A}}}
+\newcommand{\subf}{\ensuremath{\mathtt{Sub}}}
+\newcommand{\prob}{\ensuremath{F}}
+\newcommand{\probability}{\ensuremath{\mathbb{P}}}
+\newcommand{\failueprob}{\ensuremath{\mathtt{Fail}}}
+\newcommand{\denot}[1]{\ensuremath{\llbracket #1 \rrbracket}}
+\newcommand{\true}{\ensuremath{\mathtt{tt}}}
+\newcommand{\false}{\ensuremath{\mathtt{ff}}}
+\newcommand{\aGraph}[1]{\ensuremath{\mathcal{G}^{#1}}}
+\newcommand{\attSelect}{\ensuremath{\gamma_\attacker}}
+\newcommand{\defSelect}{\ensuremath{\gamma_\defender}}
+\newcommand{\attPosDelay}{\ensuremath{\Delta}}
+\newcommand{\attDelay}{\ensuremath{\delta}}
+\newcommand{\attSucc}{\ensuremath{{\mathtt{Env}}}}
+\newcommand{\attFail}{\ensuremath{\delta_{f}}}
+
+\newcommand{\astates}{\ensuremath{\mathsf{S}}}
+\newcommand{\astate}[1][]{\ensuremath{{\mathsf{s}^{#1}}}}
+\newcommand{\initastate}[1][]{\ensuremath{{\astate[#1]_{0}}}}
+\newcommand{\finalvertices}{\ensuremath{F}}
+
+\newcommand{\vvertices}{\ensuremath{\mathcal{V}^t}}
+ \newcommand{\vvertex}[1][]{\ensuremath{{v^t_{#1}}}}
+ \newcommand{\initvvertex}[1][]{\ensuremath{\vvertex[#1]^0}}
+\newcommand{\vertices}{\ensuremath{\mathcal{V}}}
+
+\newcommand{\vertex}[1][]{\ensuremath{{v_{#1}}}}
+ \newcommand{\initvertex}[1][]{\ensuremath{\vertex[#1]^0}}
+\newcommand{\initavertex}[1][]{\ensuremath{\vertex[#1]^{\attacker}}}
+\newcommand{\adgvtoastates}{\ensuremath{M}}
+\newcommand{\selectAttActions}{\ensuremath{Ac}}
+\newcommand{\sdefender}{\ensuremath{\defender^\mathcal{S}}}
+\newcommand{\sattacker}{\ensuremath{\mathcal{\attacker^S}}}
+\newcommand{\tattacker}{\ensuremath{\mathcal{\attacker^\tau}}}
+\newcommand{\environment}{\ensuremath{Env}}
+
+\newcommand{\dm}[1]{\ensuremath{\mathop{}\!\mathrm{d} #1}}
+
+\newcommand{\truns}{\ensuremath{\Omega^\tau}}
+\newcommand{\dotrans}[2]{\ensuremath{[#1]^{#2}}}
+\newcommand{\costW}{\ensuremath{\mathtt{CW}}}
+\newcommand{\satis}{\ensuremath{\vDash}}
+\newcommand{\nsatis}{\ensuremath{\not\vDash}}
+
+\newcommand{\expected}{\ensuremath{\mathbb{E}}}
+\newcommand{\lowbounds}[1]{\ensuremath{\mathcal{B}^\geq(#1)}}
+\newcommand{\upbounds}[1]{\ensuremath{\mathcal{B}^\leq(#1)}}
+\newcommand{\initloc}[1][]{\ensuremath{\ell^{#1}_0}}
+\newcommand{\loc}{\ensuremath{\ell}}
+\newcommand{\clock}{\ensuremath{c}}
+\newcommand{\taactions}[1][]{\ensuremath{\Sigma_{#1}}}
+\newcommand{\oactions}{\ensuremath{\Sigma_o}
+}\newcommand{\iactions}{\ensuremath{\Sigma_i}}
+
+\newcommand{\cedges}{\ensuremath{\rightarrow_{C}}}
+\newcommand{\uedges}{\ensuremath{\rightarrow_{U}}}
+\newcommand{\adtree}[1][]{\ensuremath{\psi_{#1}}}
+
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\newcommand{\vals}[1]{\mathcal{V}(#1)}
+\newcommand{\valzero}{\val_0}
+\newcommand{\oaction}[1]{\ensuremath{#1!}}
+\newcommand{\iaction}[1]{\ensuremath{a?}}
+\newcommand{\ltsover}[1][\adtree]{\ensuremath{\mathtt{LTS}(#1)}}
+\newcommand{\graphover}[1][\adtree]{\ensuremath{\mathtt{Graph}(\adtree)}}
+\newcommand{\intervals}{\ensuremath{\mathcal{B(\mathbb{R})}}}
+
+\newcommand{\budget}{\ensuremath{B}}
+
+\newcommand{\cstates}{\ensuremath{\mathcal{C}}}
+\newcommand{\cstate}{\ensuremath{c}}
+
+% TA
+\DeclareMathAlphabet{\mathpzc}{OT1}{pzc}{m}{it}
+\def\A{\ensuremath{\mathcal{A}}\xspace}
+\def\N{\ensuremath{\mathcal{N}}\xspace}
+\newcommand\vclocks[1][]{\ensuremath{{\mathcal{X}^{\mathtt{V}}_{#1}}}\xspace}
+\newcommand\tclocks[1][]{\ensuremath{{\mathcal{X}^{\mathtt{T}}_{#1}}}\xspace}
+\newcommand\invars[1][]{\ensuremath{I_{#1}}\xspace}
+\newcommand\posreals[0]{\ensuremath{\mathbb{R}_{\geq 0}}\xspace}
+\newcommand\guards[0]{\ensuremath{\mathcal{G}}\xspace}
+\newcommand\reachable[0]{\ensuremath{\mathcal{R}}\xspace}
+\newcommand\val[0]{\ensuremath{\nu}\xspace}
+\newcommand\timed[0]{\ensuremath{\mathit{Time}}\xspace}
+\newcommand\zones[0]{\ensuremath{\mathcal{Z}}\xspace}
+\newcommand\updt[0]{\ensuremath{\mathcal{U}}\xspace}
+% arrows
+\newcommand{\overarrowi}[1]{\overset{#1}{\rightarrow}}
+\newcommand{\overarrow}[1]{
+  \mathchoice{\raisebox{-2pt}{ $\overarrowi{#1}$ }}
+             {\raisebox{-2pt}{ $\overarrowi{#1}$ }}
+             {\raisebox{-2pt}{ $\overarrowi{#1}$ }}
+             {\raisebox{-2pt}{ $\overarrowi{#1}$ }}}
+             
+\newcommand{\longoverarrowi}[1]{\overset{#1}{\longrightarrow}}
+\newcommand{\longoverarrow}[1]{
+  \mathchoice{\raisebox{-3pt}{ $\longoverarrowi{#1}$ }}
+             {\raisebox{-3pt}{ $\longoverarrowi{#1}$ }}
+             {\raisebox{-3pt}{ $\longoverarrowi{#1}$ }}
+             {\raisebox{-3pt}{ $\longoverarrowi{#1}$ }}}
+
+
+\newcommand{\clockrates}{\ensuremath{\mathcal{R}}}
+\newcommand{\pdf}{\ensuremath{\delta}}
+\newcommand{\pmf}{\ensuremath{\gamma}}
+
+
+\newcommand{\sattackers}{\ensuremath{\mathcal{S}}}
+
+\newcommand{\edges}{\ensuremath{\mathtt{E}}}
+\newcommand{\dedges}{\ensuremath{\mathtt{E}_d}}
+\newcommand{\reach}{\ensuremath{\mathtt{Reach}}}
+\newcommand{\uppaalstratego}{\uppaal \textsc{Stratego}\xspace}
+
+\newcommand{\pruns}[1]{\ensuremath{P_{#1}}}
+\newcommand{\costinfty}{\cost^{\infty}}
+
+\newcommand{\viop}{ \ensuremath{{\cal L}}}
+\DeclareMathOperator*{\opt}{opt}
+\newcommand{\minmax}{ \ensuremath{\opt}}
+\newcommand{\closure}{ \mathit{cl}  }
+
+\newcommand{\cmax}{c_{\emph{max}}}
+\newcommand{\costlambda}{\cost_{\lambda}}
+
+
+\newcommand{\dtv}{d_{\emph{tv}}}
+\newcommand{\PNtau}[2]{P^{#1}_{\tau,\alpha^{#2}}}
+\newcommand{\ENtau}[2]{\expected ^{#1}_{\tau,\alpha^{#2}}}
+\newcommand{\alphamin}{\alpha^{\emph{min}}}
+\newcommand{\alphamax}{\alpha^{\emph{max}}}
+\newcommand{\alphamean}{\alpha^{\emph{mean}}}
+\newcommand{\alphaimin}{\alpha^{\emph{i-min}}}
+\newcommand{\alphaimax}{\alpha^{\emph{i-max}}}
+\newcommand{\alpharho}{\alpha^{\rho}}
+
+  
+\newcommand{\boldsigma}{\boldsymbol{\sigma}}
