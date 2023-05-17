@@ -47,9 +47,9 @@ def get_results(base_path, folder):
         return None
     with open(full_path, "r") as f:
         for line in f:
-            match = re.findall(r"E\(max\) = (.+)", line)
+            match = re.findall(r"E\((max|min)\) = (.+)", line)
             if len(match) == 1:
-                result.append(match[0])
+                result.append(match[0][1])
             elif len(match) > 1: 
                 raise Exception(f"Warning: Unexpected output format. \n         Found multiple matches: {match}\n         In file: {full_path}")
 
