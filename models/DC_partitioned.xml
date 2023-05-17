@@ -494,7 +494,7 @@ c = 0</label>
 		<option key="--eval-runs" value="100"/>
 		<option key="--runs-pr-state" value="100"/>
 		<query>
-			<formula>strategy S = minE (dist) [&lt;=120] {floor(x1/GRID_I)*GRID_I, floor(x2/GRID_V)*GRID_V, floor(x_R/GRID_R)*GRID_R} -&gt; {}: &lt;&gt; time &gt;= 120</formula>
+			<formula>strategy S = maxE (dist) [&lt;=120] {floor(x1/GRID_I)*GRID_I, floor(x2/GRID_V)*GRID_V, floor(x_R/GRID_R)*GRID_R} -&gt; {}: &lt;&gt; time &gt;= 120</formula>
 			<comment/>
 		</query>
 		<query>
