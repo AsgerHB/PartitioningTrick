@@ -1,6 +1,7 @@
 #!/bin/bash
 
 export NAME=BB
+export UPPAAL=uppaal-rqvar/
 
 for RUNS in 5000 10000 25000 50000 100000 250000 500000 ; do #100 1000 5000 10000 25000 50000 ; do 
     export RUNS=$RUNS
