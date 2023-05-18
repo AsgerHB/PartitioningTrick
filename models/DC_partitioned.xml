@@ -159,7 +159,7 @@ void gridify()
     } 
     // else fallthrough to memoryfull
 
-    if(AGENT_R == UNIFORM)      x_R = Rl + random(GRID_R + 1);
+    if(AGENT_R == UNIFORM)      x_R = Rl + random(GRID_R);
     else if(AGENT_R ==  UPPER)  x_R = Ru;
     else if(AGENT_R ==  MID)    x_R = (Rl + Ru) / 2.0;
     else if(AGENT_R == LOWER)   x_R = Rl;
