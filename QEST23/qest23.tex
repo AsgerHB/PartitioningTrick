@@ -828,8 +828,10 @@ Additionally, an  adversary is implemented to select a state and reward from som
 
 To model the adversary, $\alphaimin$ is defined for the bouncing ball as picking the corner of a region 
 which has the lowest height, and the lowest absolute velocity. 
-For the boost converter, the voltage furthest from the 15V target is picked and the remaining states 
-are picked according to [TODO: I still don't know. Maybe just the middle state, if my heuristic fails.]
+For the boost converter, the voltage furthest from the 15V target is picked. 
+The remaining state vareiables are the current and the consumption.
+These are picked on the assumption that a higher current will lead to a higher voltage in the next step,
+while a higher consumption will cause the voltage to drop.
 The $\alphamean$, is set to pick the centre of the region, while $\alphaimax$ works analogously to $\alphaimin$.
 
 \begin{figure}
@@ -839,14 +841,11 @@ The $\alphamean$, is set to pick the centre of the region, while $\alphaimax$ wo
   \begin{minipage}{0.45\linewidth}
   \includegraphics[width=1\textwidth]{./Figures/DC.png}
   \end{minipage}
-  \caption{Learning outcomes of the bounding ball (left) and the DC-DC boost converter (right) TODO: Actual numbers}
+  \caption{Learning outcomes of the bounding ball (left) and the DC-DC boost converter (right) TODO: Full data.}
   \label{fig:casestudies}
 \end{figure}
 
-Figure~\ref{fig:casestudies} doesn't show much of anything, because I made an error in the code saving the 
-results for the BB. 
-Additionally, there are still so, so many exciting bugs to discover in my DC-DC converter setup. 
-What it should show, is the expected reward of an agent trained in an IMDP of varying granularity $i$. 
+Figure~\ref{fig:casestudies} shows the expected reward of an agent trained in an IMDP of varying granularity $i$.
 It can (hopefully) be seen that for both agents, the adversary modelled as $\alphaimin$ generally acts as 
 the lower bound of training outcomes, while $\alphaimax$ provides the upper bound, 
 with the uniformly sampled adversary providing outcomes that lay between them. 
