@@ -68,13 +68,13 @@ modeling cyber-physical systems involving time and continuous state descriptors.
 objective is to design controllers for such systems that optimize a given objective, e.g.,
 minimizing energy consumption. At an abstract level, the controller design problem can be
 cast as optimizing a strategy in a continuous (Euclidean) Markov decision process.
-Discretization of the continuous state space is a simple yet effective strategy to solve
+Partitioning the continuous state space is a simple yet effective strategy to solve
 this optimization problem in a flexible, non-parametric manner. In previous work we have
-introduced a reinforcement learning strategy on dynamically refined discretizations, and
+introduced a reinforcement learning strategy on dynamically refined partitions, and
 we have analyzed at the semantic level approximations of Euclidean MDPs by Imprecise
 MDPs. In this paper we are moving to close the gap between the theoretical analysis and the
 practical reinforcement learning approach. We introduce several alternative simulation strategies
-that on the one hand maintain approximation guarantees as the granularity of the discretization
+that on the one hand maintain approximation guarantees as the granularity of the partitioning
 increases, and on the other hand turns our learning scenario into a standard Q-learning
 procedure. The known convergence guarantees for Q-learning then provide theoretical guarantees
 for the near-optimality of the strategies we learn for our cyber-physical system models.
@@ -390,8 +390,6 @@ which represents the worst case scenario, because
 \end{displaymath}
 where the right-hand side represents a scenario where $\sigma$ can be chosen conditioned on a
 given adversary $\alpha$.
-
-
 For any adversary $\alpha$ we define in analogy with (\ref{eq:expcost})
 \begin{equation}
 \label{eq:costforalpha}
@@ -435,26 +433,28 @@ This conjecture turns out to be false, however, as the following example shows.
 
 \begin{example}
 \label{ex:counterex}
-Let $\states=[0,1]$, and $\act$ only contain a single action $a$. For $s\in \states$ let
-$T(s,a)= \frac{s}{2}{\cal U}_{[0,s/2]} + (1-\frac{s}{2}){\boldsymbol 1}_0$, where $ {\cal U}_{[0.s/2]}$ stands for the
-uniform distribution on $[0,s/2]$, and $ {\boldsymbol 1}_0$ is the point-mass on $0$. Let $\cost(s,a)=s$.
+Let $\states=[0,1]$, and $\act$ only contain a single action $a$. Since in this case it is redundant, we omit
+in the following the action argument from cost and transition functions.
+For $s\in \states$ let
+$T(s)= \frac{s}{2}{\cal U}_{[0,s/2]} + (1-\frac{s}{2}){\boldsymbol 1}_0$, where $ {\cal U}_{[0.s/2]}$ stands for the
+uniform distribution on $[0,s/2]$, and $ {\boldsymbol 1}_0$ is the point-mass on $0$. Let $\cost(s)=s$.
 The resulting EMDP is continuous in
 the sense of Definition~\ref{def:continuous}, and the expected un-discounted cost
 $\expected(\cost_1,s)$ is finite for all $s$, because with probability 1 the cost of the $t+1$st step
 is at most $1/2$ the cost of the $t$th step. 
 
 Now consider partitions $\partition_i=\{ [0,1/i[,[1/i,2/i[,\ldots, [(i-1)/i,1] \}$ ($i\geq 1$).  In this case it is
-immediate that the min-adversary $\alphamin$ is defined by $\alphamin_T([h/i,(h+1)/i[,a)=T(h/i,a,\cdot)$ and
-$\alphamin_C([h/i,(h+1)/i[,a)=\cost(h/i,a)$, whereas $\alphamax$ is defined by
- $\alphamax_T([h/i,(h+1)/i[,a)=T((h+1)/i,a,\cdot)$,
-$\alphamax_C([h/i,(h+1)/i[,a)=\cost((h+1)/i,a)$. Then, under $\alphamax$, the cost at each transition step
+immediate that the min-adversary $\alphamin$ is defined by $\alphamin_T([h/i,(h+1)/i[)=T(h/i,\cdot)$ and
+$\alphamin_C([h/i,(h+1)/i[)=\cost(h/i)$, whereas $\alphamax$ is defined by
+ $\alphamax_T([h/i,(h+1)/i[)=T((h+1)/i,\cdot)$,
+$\alphamax_C([h/i,(h+1)/i[)=\cost((h+1)/i)$. Then, under $\alphamax$, the cost at each transition step
 is at least $1/i>0$, and, thus, $\expected_{\partition_i,\alphamax}(\cost_1,s)=\infty$ for all $i$ and all $s$.
 \end{example}
 
 
 
-This counter-example relies crucially on the possibility of infinite cost for un-discounted
-costs. As we now show, (\ref{eq:tightbounds}) is guaranteed to hold for discounted costs $\cost_\lambda$
+This counter-example relies crucially on the possibility of infinite cost in the un-discounted
+case. As we now show, (\ref{eq:tightbounds}) is guaranteed to hold for discounted costs $\cost_\lambda$
 with $\lambda<1$.
 
 
@@ -514,16 +514,15 @@ which implies (\ref{eq:tightbounds}).
 \label{ex:valit}
 Consider again the EMDP of Example~\ref{ex:counterex}, and the IMDPs defined by partitions $\partition_i$.
 In this simple example one can compute both for the min and the max adversary the transition probabilities
-$\alpha_T(\nu)(\nu')$ and the costs $\alpha_C(\nu)$ (omitting the action argument, because there is only
-one action). This results in the full specification of a standard finite state MDP that can be solved
+$\alpha_T(\nu)(\nu')$ and the costs $\alpha_C(\nu)$.
+This results in the full specification of a standard finite state MDP that can be solved
 by value iteration. Figure~\ref{fig:1dcosts} shows for $\lambda=0.9$ the resulting
 $\expected_{\partition_i,\alphamin}(\costlambda,\cdot)$ and $\expected_{\partition_i,\alphamax}(\costlambda,\cdot)$
 functions, with the expected narrowing of the gap between the $\alphamin$ and $\alphamax$ values as
 the partitions are refined.
 \end{example}
 
-\begin{figure}
-
+\begin{figure}[t]
 \centering
 \includegraphics[scale=0.5]{./Figures/valit.png}
 \caption{Cost functions for min and max adversaries at different partition granularities\label{fig:1dcosts}}
@@ -547,18 +546,22 @@ where $\beta_t\in(0,1)$ is the \emph{learning rate} at iteration $t$.
 In order to ensure convergence with high probability,
 $\beta_t$ is defined as a  decreasing function in the number of times the pair $(\nu_t,a_t)$ has been
 updated at previous time points $s<t$\cite{jaakkola1993convergence}.
-Thus, $\beta_t$ is a function of $\run_{0:t}$. Moreover, during
+Thus, $\beta_t$ is a function of $\run_{0:t}$.
+Moreover, during
 learning, actions $a_t$ are typically not selected according to a fixed, stationary strategy, but
-according to a strategy that also is designed to collect data from previously under-explored
-actions. This means that
-actions are selected according to a histoy-dependent strategy
+according to a strategy that also is designed to collect \emph{explore} new
+actions, and, in online learning scenarios, to already \emph{exploit} actions that promise low
+costs according to the current $Q$-values. Since according to (\ref{eq:qlearn}) the current
+$Q$-values are a function of $\pi_{0:t}$, this means that we that both aspects are covered by
+defining action selection based on a histoy-dependent strategy
 $
 a_t=\sigma_t(\pi_{0:t}).
 $
 We write $\boldsigma=(\sigma_t)_t$ for such a history dependent strategy.
-The data may also consist of multiple runs starting at the same or at different
-initial state. For notational simplicity we take the data to consist of a single long sequence
-indexed by $t$. 
+The data may also consist of multiple runs (a.k.a. \emph{episodes}) starting at the same or at different
+initial state. For notational simplicity we here take the data to consist of a single long sequence
+indexed by $t$, even though in our examples and experiments data usually consists of
+multiple episodes.
 
 
 Our goal is to approximate the true cost function $\expected(\cost_\lambda,s)$. In view of
@@ -592,8 +595,10 @@ almost every adversary in the sense of
 Definition~\ref{def:adversary}  is actually a $\rho$-adversary, with the possible exception
 of adversaries that
 pick $(\alpha_T(\nu,a),\alpha_C(\nu,a))$ on the boundary of  $T\cost^*_\partition(\nu,a)$.
-However, the representation in form of a distribution $\rho$ allows us to characterized critical
-computational properties of adversaries in the form of the following hierarchy of properties:
+This may be the case for $\alphamin$ and $\alphamax$, and even if they lie in the interior of
+$T\cost^*_\partition$ we will usually not have an explicit representation of the characterizing
+distribution $\rho$. Viewing adversaries as $\rho$-adversaries allows us to characterize critical
+computational properties of adversaries in the  following hierarchy:
 
 \begin{description}
 \item[P1] For all $\nu,a$, one can  sample states $s\in\nu$ according to $\rho_{\nu,a}$
@@ -618,10 +623,7 @@ $s\in\nu$ according to $\rho$, then sampling $s'\in\states$ according to $T(s,a,
 setting $\nu':=[s']_\partition$. If, according to {\bf P2}, we can at each step also compute the cost
 value $\alpharho_C(\nu,a)$, then we obtain exactly the data needed for $Q$-learning. 
 
-
-In many cases the implicit definition of  $\alphamin$ or $\alphamax$ will not allow for
-their explicit  representation as an $\alpharho$, so that even  {\bf P1} does not hold.
-We therefore consider the following more tractable explicit adversaries:
+In the following we consider three prototypical, explicit constructions of $\rho$-adversaries:
 \begin{itemize}
 \item $\rho_{\nu,a}$ is the uniform distribution on $\nu$, i.e., the Lebesgue measure normalized to a probability
 distribution. Thus, $\rho_{\nu,a}$ does not depend on $a$. We then denote $\alpharho$ as $\alphamean$, and refer to
@@ -633,10 +635,9 @@ is based on considering the immediate cost of the next transition only.
 \item In analogy to $\alphaimin$, the \emph{immediate max-adversary} $\alphaimax$ is defined.
 \end{itemize}
 
-
-\begin{figure}
+\begin{figure}[b]
 \centering
-\includegraphics[scale=0.5]{./Figures/minmaxmean2d.png}
+\includegraphics[scale=0.5]{./Figures/minmaxmean2d+err.png}
 \caption{Cost values (y-axis) at selected states learned from partitions of granularities 5,10,20,50, (x-axis)
 and the $\alphaimin, \alphaimax, \alphamean$ adversaries\label{fig:minmax2d}}
 \end{figure}
@@ -662,7 +663,9 @@ for $\cost_{0.6}$, of the regions
 $[s]_{\partition_i}$ for $i=5,10,20,50$ under the $\alphaimin, \alphaimax, \alphamean$ adversaries.
 For learning, we use a strategy $\boldsigma$ that always selects the next action uniformly at random, and
 where the learning rate $\beta_t$ is $1/\sqrt{n}$, with $n$ the number of times $(\nu_t,a_t)$ has already
-been updated.
+been updated. Learning was repeated 10 times. The curves show the average cost values of the 10 learning
+runs, and the error bars indicate tha absolute minimum and maximum values obtained in the 10 runs (showing
+that there is very little variation from granularity $i=20$ onwards.
 
 Note that
 according Theorem~\ref{prop:narrowbounds} all  costfunctions converge to
@@ -674,11 +677,7 @@ $\alphamean$ lies in between $\alphaimin$ and $\alphaimax$, and provides better 
 limit for the coarser partitions $\partition_i$. 
 
 Figure~\ref{fig:succstates} on the right shows the strategy learned for $\mdp_{\partition_{50},\alphaimin}$
-(the strategies learned for the $\alphaimax$ and $\alphamean$ adversaries look very similar). According
-to the learned strategies one should try 
- to move to the middle of the state space, except when the current position is very close
- to the boundary, in which case it is preferable to perform the very cheap (but otherwise pointless) actions
- of moving into the boundary. 
+(the strategies learned for the $\alphaimax$ and $\alphamean$ adversaries look very similar).
 \end{example}
 
 % \begin{figure}
@@ -708,11 +707,19 @@ MDP) in that the observed cost $\cost_t$ at step $t$ no longer is a function of 
 $(\nu_t,a_t)$.  However, one can still perform the Q-learning updates (\ref{eq:qlearn}) with
 $\cost_t$ instead of $\cost(\nu_t,a_t)$. We denote the function defined by these updates at time
 $t$ as $\tilde{Q}_t$. We now show that in expectation, we obtain the same results as with
-standard $Q$-learning from proper simulations of  $\mdp_{\partition,\alpha^\rho}$.
+standard $Q$-learning from proper simulations of  $\mdp_{\partition,\alpha^\rho}$. Before stating this
+result, we have to reconsider the strategy $\boldsigma$ used in learning. We have said earlier that
+$\sigma_t$ only depends on $\pi_{0:t}$, even if $\sigma_t$ is defined in terms of the current $Q$-values.
+This is no longer the case for $\tilde{Q}$, where the cost values $\cost_t$, and hence the current
+$\tilde{Q}$-values, no longer fully determined by $\pi_{0:t}$. We therefore have to restrict the following
+theorem explicitly to training strategies that are a function only of $\pi_{0:t}$. This is not a serious
+limitation, since the dependence on current $Q$-values is mostly desirable in online training
+scenarios.
 
 
 \begin{theorem}
-For all $(\nu,a)\in \partition\times\act$, $\nu_0\in\partition$, strategies $\boldsigma$, and $t\geq 0$:
+For all $(\nu,a)\in \partition\times\act$, $\nu_0\in\partition$, strategies $\boldsigma$ such that
+$\sigma_t$ is a function of $\pi_{0:t}$, and $t\geq 0$:
 \begin{equation}
 \label{eq:expectations}
 \expected_{\nu_0,\boldsigma}(\tilde{Q}_t(\nu,a))=\expected_{\nu_0,\boldsigma}({Q}_t(\nu,a))
@@ -725,38 +732,38 @@ By induction on $t$. For $t=0$ we have $\tilde{Q}_0\equiv Q_0 \equiv 0$. Assume 
 holds for $t$. Then we first write
 \begin{equation}
 \expected_{\nu_0,\sigma}(\tilde{Q}_{t+1}(\nu,a)) =
-\sum_{\path_{0:t}\in \partition^t} P_{\nu_0,\boldsigma}(\path_{0:t})\expected_{\nu_0,\sigma}(\tilde{Q}_{t+1}(\nu,a)|\path_{0:t}),
+\sum_{\pi_{0:t}\in (\partition\times\act)^t} P_{\nu_0,\boldsigma}(\pi_{0:t})\expected_{\nu_0,\sigma}(\tilde{Q}_{t+1}(\nu,a)|\pi_{0:t}),
 \end{equation}
 and similarly for $\expected_{\nu_0,\sigma}({Q}_{t+1}(\nu,a))$. Since the probabilities
-$P_{\nu_0,\boldsigma}(\path_{0:t})$ are the same for $\tilde{Q}_{t}$ and ${Q}_{t}$, it is sufficient to show
-that for all $\path_{0:t}$
+$P_{\nu_0,\boldsigma}(\pi_{0:t})$ are the same for $\tilde{Q}_{t}$ and ${Q}_{t}$, it is sufficient to show
+that for all $\pi_{0:t}$
 \begin{equation}
-\expected_{\nu_0,\sigma}(\tilde{Q}_{t+1}(\nu,a)|\path_{0:t})=\expected_{\nu_0,\sigma}({Q}_{t+1}(\nu,a)|\path_{0:t}).
+\expected_{\nu_0,\sigma}(\tilde{Q}_{t+1}(\nu,a)|\pi_{0:t})=\expected_{\nu_0,\sigma}({Q}_{t+1}(\nu,a)|\pi_{0:t}).
 \end{equation}
-If $\nu_{t}\neq \nu$ in $\path_{0:t}$, or $a\neq \sigma_t(\path_{0:t})$, then the $Q$ and $\tilde{Q}$ values
+If $\nu_{t}\neq \nu$ in $\pi_{0:t}$, or $a\neq \sigma_t(\pi_{0:t})$, then the $Q$ and $\tilde{Q}$ values
 of $(\nu,a)$ are not updated in the $t+1$'st iteration, and (\ref{eq:expectations}) holds by induction
 hypothesis.
 
 Assume, then, that $(\nu_{t}a_{t})=(\nu,a)$. We obtain:
 \begin{multline}
 \label{eq:local190}
-\expected_{\nu_0,\boldsigma}(\tilde{Q}_{t+1}(\nu,a)|\path_{0:t})= 
-(1-\beta_{t}(\path_{0:t}))\expected_{\nu_0,\boldsigma}(\tilde{Q}_{t}(\nu,a)|\path_{0:t}) +\\
-\beta_{t}(\path_{0:t})(\expected_{\nu_0,\boldsigma}(\cost_{t}|\path_{0:t})+
-\lambda \expected_{\nu_0,\boldsigma}(\min_{a'\in\act}\tilde{Q}_{t}(\nu_{t+1},a)|\path_{0:t}) ),
+\expected_{\nu_0,\boldsigma}(\tilde{Q}_{t+1}(\nu,a)|\pi_{0:t})= 
+(1-\beta_{t}(\pi_{0:t}))\expected_{\nu_0,\boldsigma}(\tilde{Q}_{t}(\nu,a)|\pi_{0:t}) +\\
+\beta_{t}(\pi_{0:t})(\expected_{\nu_0,\boldsigma}(\cost_{t}|\pi_{0:t})+
+\lambda \expected_{\nu_0,\boldsigma}(\min_{a'\in\act}\tilde{Q}_{t}(\nu_{t+1},a)|\pi_{0:t}) ),
 \end{multline}
 where in the rightmost term the $\tilde{Q}_{t}(\nu_{t+1},a)$ now are to be understood as random
 variables defined by the random next state $\nu_{t+1}$. 
-The distribution of $\cost_t$ conditional on $\path_{0:t}$ only depends on $\nu_t=\nu$, and the expectation is
+The distribution of $\cost_t$ conditional on $\pi_{0:t}$ only depends on $\nu_t=\nu$, and the expectation is
 \begin{equation}
 \label{eq:local200}
-\expected_{\nu_0,\boldsigma}(\cost_{t}|\path_{0:t})=\int_\nu \cost(s,a) d\rho_{\nu,a}(s)=\alpha^\rho_C(\nu,a).
+\expected_{\nu_0,\boldsigma}(\cost_{t}|\pi_{0:t})=\int_\nu \cost(s,a) d\rho_{\nu,a}(s)=\alpha^\rho_C(\nu,a).
 \end{equation}
-The distribution for the random $\nu_{t+1}$ given $\path_{0:t}$
-only depends on $\nu_t$ and $a=a_t=\sigma_t(\path_{0:t})$. We can therefore write: 
+The distribution for the random $\nu_{t+1}$ given $\pi_{0:t}$
+only depends on $(\nu_t,a_t)=(\nu,a)$. We can therefore write: 
 \begin{multline}
 \label{eq:local210}
-\expected_{\nu_0,\boldsigma}(\min_{a'\in\act}\tilde{Q}_{t}(\nu_{t+1},a)|\path_{0:t}) = 
+\expected_{\nu_0,\boldsigma}(\min_{a'\in\act}\tilde{Q}_{t}(\nu_{t+1},a)|\pi_{0:t}) = 
 \int_\nu  \sum_{\nu'\in\partition} T(s,a,\nu')  \min_{a'\in\act} \tilde{Q}_{t}(\nu',a') d\rho(s) =\\
 \sum_{\nu'\in\partition} \min_{a'\in\act} \tilde{Q}_{t}(\nu',a') \int_\nu  T(s,a,\nu') d\rho(s) =
 \sum_{\nu'\in\partition} \alpha^\rho_T(\nu,a)(\nu')   \min_{a'\in\act} \tilde{Q}_{t}(\nu',a').
@@ -765,47 +772,61 @@ Substituting the right-hand sides of (\ref{eq:local200}) and (\ref{eq:local200})
 right-hand side of (\ref{eq:local190}), and replacing by induction hypothesis
 $\tilde{Q}_t$ with $Q_t$ everywhere, we obtain
 \begin{multline}
-(1-\beta_{t}(\path_{0:t}))\expected_{\nu_0,\boldsigma}({Q}_{t}(\nu,a)|\path_{0:t}) +\\
-\beta_{t}(\path_{0:t})(\alpha^\rho_C(\nu,a)  +
+(1-\beta_{t}(\pi_{0:t}))\expected_{\nu_0,\boldsigma}({Q}_{t}(\nu,a)|\pi_{0:t}) +\\
+\beta_{t}(\pi_{0:t})(\alpha^\rho_C(\nu,a)  +
 \lambda \sum_{\nu'\in\partition} \alpha^\rho_T(\nu,a)(\nu') \min_{a'\in\act}\tilde{Q}_{t}(\nu_{t+1},a) =\\
-\expected_{\nu_0,\sigma}({Q}_{t+1}(\nu,a)|\path_{0:t}).
+\expected_{\nu_0,\sigma}({Q}_{t+1}(\nu,a)|\pi_{0:t}).
 \end{multline}
 
 \end{proof}
 
-\begin{figure}
-\includegraphics[scale=0.5]{./Figures/region0.png}
-\includegraphics[scale=0.5]{./Figures/region2.png}
-\includegraphics[scale=0.5]{./Figures/region6.png}
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{./Figures/traces-g5.png}
 \caption{Learned $Q$ vs. $\tilde{Q}$-values for selected regions \label{fig:Qcurves}}
 \end{figure}
 
 \begin{example}
 \label{ex:2dex-4}
-(Example \ref{ex:2dex-3} continued).
-We consider the $\alphamean$ adversary, and compare the $Q$-values learned during proper $Q$-learning with
+(Example \ref{ex:2dex-3} continued). We now fix the granularity at $i=5$, and 
+consider the $\alphamean$ adversary.  We compare the $Q$-values learned during proper $Q$-learning with
 the $\tilde{Q}$ values obtained during our approximation of the $Q$ learning process. 
-
 For both exact and approximate $Q$-learning we perform 5 learning
-runs. In each learning run we sample 1000 times a random initial state, and then simulate
-system runs of length 10 (since in this model runs quickly get absorbed in the leftmost
-region, many short runs are needed to collect informative data). We record the $Q$ and $\tilde{Q}$ values
-at the end of each short run. 
+runs. Each learning run consists of 50000 episodes of length 10.
+We record the $Q$ and $\tilde{Q}$ values
+at the end of each episode. 
 
-Figure~\ref{fig:Qcurves} shows for regions $[0,0.1[,[0.2,0.3[$ and $[0.6,0.7[$ the developments of the
+Figure~\ref{fig:Qcurves} shows for the regions containing the points $(0,0), (0,0.5)$ and $(0.9,0.9)$
+the developments of the
 $Q$ (green) and $\tilde{Q}$ (red) values over the course of the 1000 episodes. One can see that in expectation
-the learned $Q$ and $\tilde{Q}$ coincide, but that the  $\tilde{Q}$ values exhibit a larger variance. For the
-region $[0.6,0.7[$ further to the right also the $Q$-values show significant variance. This is because
-the values here are supported by much fewer datapoints.
+the learned $Q$ and $\tilde{Q}$ coincide, but that the  $\tilde{Q}$ values exhibit a larger variance (especially
+for the $(0.9,0.9)$ region). 
 \end{example}
 
 
 
-\section{Bouncing ball}
+\section{UPPAAL Stratego Case Studies}
 
 \section{Conclusion}
 
-Open problem: interleaving with refinement steps
+We have developed a general approach to approximate an EMDP  by a standard finite
+state MDP via adversaries in an imprecise MDP defined by a partition of the state space.
+We have shown that under suitable conditions on the
+continuity of the EMDP, and for discounted cost functions, this approximation becomes
+more and more precise as the granularity of the partition increases. We have further developed
+conditions on the adversaries that allow us to effectively sample system runs on which standard
+$Q$-learning methods with their known convergence guarantees can be applied. In case where
+our system does not allow to implement adversaries with these properties, we find that under
+much weaker (usually satisfied) conditions, we can still simulate system runs, such that applying
+$Q$-learning on these runs yields in expectation the same results we would get if the stronger
+conditions were satisfied.
+
+In this paper we have focused on the static scenario where the partition is fixed during learning.
+A question for future work is how to best interleave learning steps on a given partition with
+refinement steps of the partition, so that an overall convergence to the cost function of the
+EMDP is guaranteed.
+
+
 
 \bibliographystyle{abbrvnat}
 \bibliography{imdp}
