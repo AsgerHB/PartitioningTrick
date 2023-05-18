@@ -807,6 +807,52 @@ for the $(0.9,0.9)$ region).
 
 \section{UPPAAL Stratego Case Studies}
 
+Our method is evaluated on two case-studies, the dc-dc boost converter\cite{dcdcconverter}
+and the bouncing ball\cite{playball}. 
+In either model, the controller acts at set time periods.
+The former is a model of a simple circuit to boost an input of 10V DC, under fluctuating consumption. 
+A switch in the curcuit must be toggled by a controller, to regulate the output voltage. 
+% Is integrated the right word to use here? It is the sum each time-step.
+The intergated absolute difference between actual output and 15V is used as negative reward.
+
+The latter models a ball which preserves a varying amount of energy when it impacts with the ground.
+A controller can add energy to the system by hitting the ball. 
+% Here too
+The integrated height of the ball is used as the reward signal, while abstaining from hitting the ball
+yields additional reward.
+
+These two models are modified to act as IMPDs under a partition $\partition_i$, 
+such that there are $i$ regions along each axis. 
+The input signal of the controller is changed to be the region corresponding to the model's state.  
+Additionally, an  adversary is implemented to select a state and reward from somewhere within the current region.
+
+To model the adversary, $\alphaimin$ is defined for the bouncing ball as picking the corner of a region 
+which has the lowest height, and the lowest absolute velocity. 
+For the boost converter, the voltage furthest from the 15V target is picked and the remaining states 
+are picked according to [TODO: I still don't know. Maybe just the middle state, if my heuristic fails.]
+The $\alphamean$, is set to pick the centre of the region, while $\alphaimax$ works analogously to $\alphaimin$.
+
+\begin{figure}
+  \begin{minipage}{0.45\linewidth}
+  \includegraphics[width=1\textwidth]{./Figures/DC.png}
+  \end{minipage}
+  \begin{minipage}{0.45\linewidth}
+  \includegraphics[width=1\textwidth]{./Figures/DC.png}
+  \end{minipage}
+  \caption{Learning outcomes of the DC-DC boost conveter (left) and the DC-DC boost convter again (right) TODO: Actual numbers}
+  \label{fig:casestudies}
+\end{figure}
+
+Figure~\ref{fig:casestudies} doesn't show much of anything, because I made an error in the code saving the 
+results for the BB. 
+Additionally, there are still so, so many exciting bugs to discover in my DC-DC converter setup. 
+What it should show, is the expected reward of an agent trained in an IMDP of varying granularity $i$. 
+It can (hopefully) be seen that for both agents, the adversary modelled as $\alphaimin$ generally acts as 
+the lower bound of training outcomes, while $\alphaimax$ provides the upper bound, 
+with the uniformly sampled adversary providing outcomes that lay between them. 
+
+
+
 \section{Conclusion}
 
 We have developed a general approach to approximate an EMDP  by a standard finite
