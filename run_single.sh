@@ -5,7 +5,7 @@ CUR=$(pwd)
 if [[ $NAME == DC ]] ; then
     DIR="raw/$EXPNAME/$NAME/AI${AGENT_I}_AV${AGENT_V}_AR${AGENT_R}_GI${GRID_I}_GV${GRID_V}_GR${GRID_R}_R${RUNS}_C${SAMPLED_COST}"
 elif [[ $NAME == BB ]] ; then
-    DIR="raw/$NAME/AV${AGENT_V}_AP${AGENT_P}_GV${GRID_V}_GP${GRID_P}_R${RUNS}"
+    DIR="raw/$NAME/AV${AGENT_V}_AP${AGENT_P}_GV${GRID_V}_GP${GRID_P}_R${RUNS}_C${SAMPLED_COST}"
 else
     echo "unexpected value NAME (was: $($NAME))"
     exit 1
