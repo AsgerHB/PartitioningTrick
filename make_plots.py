@@ -58,8 +58,8 @@ def plot_learning_rates_BB(df, AP, AV):
     df = df[(df["AP"] == AP) & (df["AV"] == AV)]
     df = df.sort_values(by=['gamma'])
     fig, ax = plt.subplots()
-    fig.set_figheight(8)
-    fig.set_figwidth(12)
+    fig.set_figheight(3)
+    fig.set_figwidth(4)
 
     for key, grouping in df.groupby(["R"]):
         ax = grouping.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label=f"R={key[0]}")
@@ -68,12 +68,13 @@ def plot_agents_BB(df, R):
     fig, ax = plt.subplots()
     plt.ylim([0, 2000])
     #ax.set_yscale('log')
-    fig.set_figheight(8)
-    fig.set_figwidth(12)
+    fig.set_figheight(3)
+    fig.set_figwidth(4)
 
     df = df.sort_values(by=['gamma'])
 
-    
+
+    # # For-loop to just print every configuration    
     """df1 = df[(df["R"] == R)]
     df1 = df1[["gamma", "reward"]].groupby('gamma').min()
     print(df1) 
@@ -88,53 +89,57 @@ def plot_agents_BB(df, R):
     ax = df1.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label=f"Memoryfull")
 
     df1 = df[(df["R"] == R) & (df["AP"] == -1) & (df["AV"] == -2) & (df["C"] == -1)]
-    ax = df1.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label=f"energyMIN")
+    ax = df1.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label="$\\alpha^{i-min}$")
 
     df1 = df[(df["R"] == R) & (df["AP"] == 1) & (df["AV"] == -3) & (df["C"] == 1)]
-    ax = df1.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label=f"energyMAX")
+    ax = df1.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label="$\\alpha^{i-max}$")
 
     df1 = df[(df["R"] == R) & (df["AP"] == 2) & (df["AV"] == 2) & (df["C"] == 2)]
-    ax = df1.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label=f"Uniform+Psample")
+    ax = df1.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label="$\\alpha^{mean}$")
 
-    df1 = df[(df["R"] == R) & (df["AP"] == 2) & (df["AV"] == 2) & (df["C"] == 0)]
-    ax = df1.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label=f"Uniform+Pavg")
+    # df1 = df[(df["R"] == R) & (df["AP"] == 2) & (df["AV"] == 2) & (df["C"] == 0)]
+    # ax = df1.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label=f"Uniform+Pavg")
 
-    df1 = df[(df["R"] == R) & (df["AP"] == -1) & (df["AV"] == -1) & (df["C"] == -1)]
-    ax = df1.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label=f"Lower,Lower")
+    # df1 = df[(df["R"] == R) & (df["AP"] == -1) & (df["AV"] == -1) & (df["C"] == -1)]
+    # ax = df1.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label=f"Lower,Lower")
 
-    df1 = df[(df["R"] == R) & (df["AP"] == 1) & (df["AV"] == 1) & (df["C"] == 1)]
-    ax = df1.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label=f"Upper,Upper")
-    ax.set_xlabel("1/delta")
+    # df1 = df[(df["R"] == R) & (df["AP"] == 1) & (df["AV"] == 1) & (df["C"] == 1)]
+    # ax = df1.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label=f"Upper,Upper")
+
+    ax.set_xlabel("$i$")
+    fig.tight_layout()
 
 def plot_agents_DC(df, R):
     fig, ax = plt.subplots()
     #plt.ylim([0, 2000])
     #ax.set_yscale('log')
-    fig.set_figheight(8)
-    fig.set_figwidth(12)
+    fig.set_figheight(3)
+    fig.set_figwidth(4)
 
     df = df.sort_values(by=['gamma'])
 
-    df2 = df[(df["R"] == R)]
-    df2 = df2.groupby(["AI", "AV", "AR", "C"])
-    for (keys, group) in df2:
-        group = group[["gamma", "reward"]]
-        group = group.sort_values(by=["gamma"])
-        label = [f"{k}{v}" for k, v in zip(["AI", "AV", "AR", "C"], keys)]
-        label = "_".join(label)
-        ax = group.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label=label)
 
-    # df1 = df[(df["R"] == R) & (df["AI"] == 3) & (df["AV"] == 3) & (df["AR"] == 3) & (df["C"] == 2)]
-    # ax = df1.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label=f"Memoryfull") # Historical + sampled cost
+    # # For-loop to just print every configuration
+    # df2 = df[(df["R"] == R)]
+    # df2 = df2.groupby(["AI", "AV", "AR", "C"])
+    # for (keys, group) in df2:
+    #     group = group[["GV", "reward"]]
+    #     group = group.sort_values(by=["GV"])
+    #     label = [f"{k}{v}" for k, v in zip(["AI", "AV", "AR", "C"], keys)]
+    #     label = "_".join(label)
+    #     ax = group.plot(ax=ax, x="GV", y="reward", ylabel="reward", label=label)
 
-    # df1 = df[(df["R"] == R) & (df["AI"] == -2) & (df["AV"] == -2) & (df["AR"] == -2) & (df["C"] == -1)]
-    # ax = df1.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label=f"Worst+worst cost")
+    df1 = df[(df["R"] == R) & (df["AI"] == 3) & (df["AV"] == 3) & (df["AR"] == 3) & (df["C"] == 2)]
+    ax = df1.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label=f"Memoryfull") # Historical + sampled cost
 
-    # df1 = df[(df["R"] == R) & (df["AI"] == -3) & (df["AV"] == -3) & (df["AR"] == -3) & (df["C"] == 1)]
-    # ax = df1.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label=f"Best+best cost")
+    df1 = df[(df["R"] == R) & (df["AI"] == -2) & (df["AV"] == -2) & (df["AR"] == -2) & (df["C"] == -1)]
+    ax = df1.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label="$\\alpha^{i-min}$")
 
-    # df1 = df[(df["R"] == R) & (df["AI"] == 2) & (df["AV"] == 2) & (df["AR"] == 2) & (df["C"] == 2)]
-    # ax = df1.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label=f"Uniform+sampled cost")
+    df1 = df[(df["R"] == R) & (df["AI"] == -3) & (df["AV"] == -3) & (df["AR"] == -3) & (df["C"] == 1)]
+    ax = df1.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label="$\\alpha^{i-max}$")
+
+    df1 = df[(df["R"] == R) & (df["AI"] == 2) & (df["AV"] == 2) & (df["AR"] == 2) & (df["C"] == 2)]
+    ax = df1.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label="$\\alpha^{mean}$")
 
     # df1 = df[(df["R"] == R) & (df["AI"] == 2) & (df["AV"] == 2) & (df["AR"] == 2) & (df["C"] == 0)]
     # ax = df1.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label=f"Uniform+static cost")
@@ -145,7 +150,8 @@ def plot_agents_DC(df, R):
     # df1 = df[(df["R"] == R) & (df["AI"] == 1) & (df["AV"] == 1) & (df["AR"] == 1) & (df["C"] == 1)]
     # ax = df1.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label=f"Upper+best cost")
 
-    ax.set_xlabel("1/delta")
+    ax.set_xlabel("$i$")
+    fig.tight_layout()
 
 if __name__ == "__main__":
     import argparse
