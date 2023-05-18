@@ -23,7 +23,7 @@ docs/site/
 # environment.
 Manifest.toml
 
-Figures/
+RW/Figures/
 
 .vscode/
 
