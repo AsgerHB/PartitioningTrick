@@ -30,6 +30,8 @@ import "libc.so.6" {
 
 // PARAM: The state space is partitioned into uniformly sized squares of size GRID_P*GRID_V. 
 // Partitions are addressed by their index for each axis. Since the state space is bounded there is only a finite amount of partitions.
+// MISNOMER: These variables are named after the shell script, but there they represent the total number of partitions along given axis.
+//           While here they represent the size of one region along that axis.
 double GRID_P = 0.1;
 double GRID_V = 0.1;
 int SAMPLED_COST = 0;

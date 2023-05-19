@@ -67,9 +67,11 @@ import "libc.so.6" {
 
 // The state space is partitioned into uniformly sized boxes of size GRID_I*GRID_R*GRID_R
 // Partitions are addressed by their index for each axis. Since the state space is bounded there is only a finite amount of partitions.
-double GRID_I = 0.1;
-double GRID_V = 0.1;
-double GRID_R = 0.1; // R is represented as an integer in [30;200]
+// MISNOMER: These variables are named after the shell script, but there they represent the total number of partitions along given axis.
+//           While here they represent the size of one region along that axis.
+double GRID_I = 0.1;    // I [0;3]
+double GRID_V = 0.1;    // V [14;16]
+double GRID_R = 0.1/20; // R [30;90]
 
 // Whether to pick a completely random initial state.
 bool randomizeInitial = false;
@@ -488,11 +490,11 @@ c = 0</label>
 //system Converter, Controller, Timer, Monitor;        // Constant load
 //system Converter, Controller, Load, Timer;    // No reset when leaving state space</system>
 	<queries>
-		<option key="--total-runs" value="100"/>
+		<option key="--total-runs" value="1000"/>
 		<option key="--max-iterations" value="1"/>
-		<option key="--good-runs" value="100"/>
-		<option key="--eval-runs" value="100"/>
-		<option key="--runs-pr-state" value="100"/>
+		<option key="--good-runs" value="1000"/>
+		<option key="--eval-runs" value="1000"/>
+		<option key="--runs-pr-state" value="1000"/>
 		<query>
 			<formula>strategy S = maxE (reward) [&lt;=120] {floor(x1/GRID_I)*GRID_I, floor(x2/GRID_V)*GRID_V, floor(x_R/GRID_R)*GRID_R} -&gt; {}: &lt;&gt; time &gt;= 120</formula>
 			<comment/>
