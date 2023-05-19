@@ -17,12 +17,12 @@ for RUNS in 5000 10000 25000 50000 100000 250000 500000 ; do
         export AGENT_R=2
         $EXECUTOR ./run_single.sh
 
-        # Historical + sampled cost
-        export SAMPLED_COST=2
-        export AGENT_I=3
-        export AGENT_V=3
-        export AGENT_R=3
-        $EXECUTOR ./run_single.sh
+        # # Historical + sampled cost
+        # export SAMPLED_COST=2
+        # export AGENT_I=3
+        # export AGENT_V=3
+        # export AGENT_R=3
+        # $EXECUTOR ./run_single.sh
 
         # # Best + sampled cost
         # export SAMPLED_COST=2

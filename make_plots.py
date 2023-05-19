@@ -66,7 +66,7 @@ def plot_learning_rates_BB(df, AP, AV):
 
 def plot_agents_BB(df, R):
     fig, ax = plt.subplots()
-    plt.ylim([0, 2000])
+    #plt.ylim([0, 2000])
     #ax.set_yscale('log')
     fig.set_figheight(3)
     fig.set_figwidth(4)
@@ -85,8 +85,8 @@ def plot_agents_BB(df, R):
     ax = df1.plot(ax=ax, y="reward", ylabel="reward", label=f"MAX")
     """
 
-    df1 = df[(df["R"] == R) & (df["AP"] == 3) & (df["AV"] == 3) & (df["C"] == 2)]
-    ax = df1.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label=f"Memoryfull")
+    # df1 = df[(df["R"] == R) & (df["AP"] == 3) & (df["AV"] == 3) & (df["C"] == 2)]
+    # ax = df1.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label=f"Memoryfull")
 
     df1 = df[(df["R"] == R) & (df["AP"] == -1) & (df["AV"] == -2) & (df["C"] == -1)]
     ax = df1.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label="$\\alpha^{i-min}$")
@@ -129,8 +129,8 @@ def plot_agents_DC(df, R):
     #     label = "_".join(label)
     #     ax = group.plot(ax=ax, x="GV", y="reward", ylabel="reward", label=label)
 
-    df1 = df[(df["R"] == R) & (df["AI"] == 3) & (df["AV"] == 3) & (df["AR"] == 3) & (df["C"] == 2)]
-    ax = df1.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label=f"Memoryfull") # Historical + sampled cost
+    # df1 = df[(df["R"] == R) & (df["AI"] == 3) & (df["AV"] == 3) & (df["AR"] == 3) & (df["C"] == 2)]
+    # ax = df1.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label=f"Memoryfull") # Historical + sampled cost
 
     df1 = df[(df["R"] == R) & (df["AI"] == -2) & (df["AV"] == -2) & (df["AR"] == -2) & (df["C"] == -1)]
     ax = df1.plot(ax=ax, x="gamma", y="reward", ylabel="reward", label="$\\alpha^{i-min}$")
