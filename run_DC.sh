@@ -6,9 +6,12 @@ export UPPAAL=uppaal-533581a/
 for RUNS in 5000 ; do # 5000 10000 25000 50000 100000 250000 500000 ; do
     export RUNS=$RUNS
     for NGRID in $(seq 15 15 1500) ; do 
+        # I ∈ [0, 3]
+        # V ∈ [14, 16] (Baseline)
+        # R ∈ [30, 90]
         export GRID_I=$NGRID
         export GRID_V=$NGRID
-        export GRID_R=$NGRID
+        export GRID_R=$(($NGRID)*20)
 
         # Uniform + sampled cost
         export SAMPLED_COST=2
