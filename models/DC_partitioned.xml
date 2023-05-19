@@ -27,9 +27,9 @@ int switches;
 int number_deaths; 
 
 // Consupmtion. The output resistance fluctuates every microsecond.
-const double R_fluctuation = 5;
+const double R_fluctuation = 30;
 const int R_min = 30;
-const int R_max = 90;
+const int R_max = 200;
 
 
 const double x_L = 450e-6;  // capacitor
@@ -212,7 +212,7 @@ void initialize()
         GRID_V = (V_max - V_min) / atoi(env);
     env = getenv("GRID_R");
     if(env.l || env.h)
-        GRID_R = (R_max - R_min) / atoi(env);
+        GRID_R = (V_max - V_min) / atoi(env);
     env = getenv("AGENT_I");
     if(env.l || env.h)
         AGENT_I = atoi(env);
