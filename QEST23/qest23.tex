@@ -806,33 +806,35 @@ for the $(0.9,0.9)$ region).
 
 
 \section{U{\small{PPAAL}} S{\small{TRATEGO}} Case Studies}
-
-Our method is evaluated on two case-studies, the dc-dc boost converter\cite{dcdcconverter}
-and the bouncing ball\cite{playball}. 
+We evaluate our method on two case-studies; the DC-DC boost converter\cite{dcdcconverter}
+and the Bouncing Ball\cite{playball}.
 In either model, the controller acts at set time periods.
-The former is a model of a simple circuit to boost an input of 10V DC, under fluctuating consumption. 
-A switch in the curcuit must be toggled by a controller, to regulate the output voltage. 
+In the DC-DC case, the aim is to control the internal circuitry such that the output voltage matches the 15V reference.
+The intergated absolute difference between actual output and the reference is thus the negative reward used.
+%The former is a model of a simple circuit to boost an input of 10V DC, under fluctuating consumption. 
+%A switch in the circuit must be toggled by a controller, to regulate the output voltage with the aim of keeping it close to the target (15V).
 % Is integrated the right word to use here? It is the sum each time-step.
-The intergated absolute difference between actual output and 15V is used as negative reward.
-
-The latter models a ball which preserves a varying amount of energy when it impacts with the ground.
-A controller can add energy to the system by hitting the ball. 
+%
+In the Bouncing Ball case, the aim is to maximize the integral of the height of the ball.
+%The latter models a ball which preserves a varying amount of energy when it impacts with the ground.
+A controller can add energy to the system by hitting the ball, but suffers a fixed cost per hit.
 % Here too
-The integrated height of the ball is used as the reward signal, while abstaining from hitting the ball
-yields additional reward.
-
+%The integrated height of the ball is used as the reward signal, while abstaining from hitting the ball
+%yields additional reward.
+%The both systems are expressed as IMDPs in the specification language of \uppaalstratego, 
 Using \uppaalstratego, models are created of IMDPs which correspond to the case studies, 
 with a partition $\partition_i$ such that there are $i$ regions along each axis. 
 %A strategy is learned using the region indices as reward signals.
-Additionally, an  adversary is implemented to select a state and reward from somewhere within the current region.
+Additionally, an  adversary is implemented to select a state and reward from within the current region.
 
-To model the adversary, $\alphaimin$ is defined for the bouncing ball as picking the corner of a region 
+We specifically study approximations of the $\alphaimin$, $\alphaimax$ and $\alphamean$ adversaries and construct these specific to the given case-study.
+For the Bouncing Ball, $\alphaimin$ picks the corner of a region 
 which has the lowest height, and the lowest absolute velocity. 
-For the boost converter, the voltage furthest from the 15V target is picked. 
-The remaining state vareiables are the current and the consumption.
+For the DC-DC converter, the voltage furthest from the 15V target is picked. 
+The remaining state variables are the current and the consumption.
 These are picked on the assumption that a higher current will lead to a higher voltage in the next step,
 while a higher consumption will cause the voltage to drop.
-The $\alphamean$, is set to pick the centre of the region, while $\alphaimax$ is picked analogously to $\alphaimin$.
+The $\alphamean$, is set to pick the center of the region, while $\alphaimax$ is picked analogously to $\alphaimin$ for the two cases.
 
 \begin{figure}[t]
   \begin{minipage}{0.45\linewidth}
@@ -841,15 +843,15 @@ The $\alphamean$, is set to pick the centre of the region, while $\alphaimax$ is
   \begin{minipage}{0.45\linewidth}
   \includegraphics[width=1\textwidth]{./Figures/DC.png}
   \end{minipage}
-  \caption{Learning outcomes of the bouncing ball (left) and the DC-DC boost converter (right)}
+  \caption{Cost values of the initial state of the Bouncing Ball (left) and the DC-DC converter (right)}
   \label{fig:casestudies}
 \end{figure}
 
-Figure~\ref{fig:casestudies} shows the expected reward of an agent trained for a constant number of episodes, 
+Figure~\ref{fig:casestudies} shows the expected reward of the initial state of an agent trained on a fixed budget
 on IMDPs of varying granularity $i$.
-It can be seen that for both agents, the adversary modelled as $\alphaimin$ generally acts as 
+We observe that for both agents the adversary modeled as $\alphaimin$ generally acts as 
 the lower bound of training outcomes, while $\alphaimax$ provides the upper bound, 
-with the uniformly sampled adversary providing outcomes that lay between them. 
+with the uniformly sampled adversary providing outcomes that lay between them.
 
 
 
