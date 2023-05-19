@@ -1,7 +1,7 @@
 #!/bin/bash
 
 export NAME=DC
-export UPPAAL=uppaal-rqvar/
+export UPPAAL=uppaal-533581a/
 
 for RUNS in 25000 ; do # 5000 10000 25000 50000 100000 250000 500000 ; do
     export RUNS=$RUNS
