@@ -12,7 +12,7 @@ for RUNS in 25000 ; do # 5000 10000 25000 50000 100000 250000 500000 ; do
     # for NGRID in $(seq 15 60 1500) ; do 
         export GRID_I=$NGRID
         export GRID_V=$NGRID
-        export GRID_R=$(($NGRID)*20)
+        export GRID_R=$(($NGRID*20))
 
         # Uniform + sampled cost
         export SAMPLED_COST=2
