@@ -66,7 +66,7 @@ def plot_learning_rates_BB(df, AP, AV):
 
 def plot_agents_BB(df, R):
     fig, ax = plt.subplots()
-    df = df[df["GP"] > 200]
+    df = df[df["GP"] > 100]
     #ax.set_yscale('log')
     fig.set_figheight(3)
     fig.set_figwidth(4)
@@ -111,7 +111,7 @@ def plot_agents_BB(df, R):
 
 def plot_agents_DC(df, R):
     fig, ax = plt.subplots()
-    df = df[df["GV"] > 200]
+    df = df[df["GV"] > 100]
     #ax.set_yscale('log')
     fig.set_figheight(3)
     fig.set_figwidth(4)
