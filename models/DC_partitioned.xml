@@ -360,24 +360,32 @@ const double discount = 0.99;</declaration>
 			<committed/>
 		</location>
 		<location id="id17" x="-85" y="119">
-			<label kind="invariant" x="-161" y="136">dist'==fabs(x2 - x2ref)</label>
+			<label kind="invariant" x="-76" y="127">dist'==fabs(x2 - x2ref)</label>
 		</location>
-		<init ref="id17"/>
-		<transition id="id18">
+		<location id="id18" x="-85" y="221">
+			<committed/>
+		</location>
+		<init ref="id18"/>
+		<transition id="id19" controllable="false">
+			<source ref="id18"/>
+			<target ref="id17"/>
+			<label kind="assignment" x="-127" y="170">initialize()</label>
+		</transition>
+		<transition id="id20">
 			<source ref="id16"/>
 			<target ref="id17"/>
 			<label kind="synchronisation" x="-25" y="102">off!</label>
 			<nail x="-25" y="-59"/>
 			<nail x="-25" y="119"/>
 		</transition>
-		<transition id="id19">
+		<transition id="id21">
 			<source ref="id16"/>
 			<target ref="id17"/>
 			<label kind="synchronisation" x="-170" y="102">on!</label>
 			<nail x="-144" y="-59"/>
 			<nail x="-144" y="119"/>
 		</transition>
-		<transition id="id20" controllable="false">
+		<transition id="id22" controllable="false">
 			<source ref="id17"/>
 			<target ref="id16"/>
 			<label kind="synchronisation" x="-76" y="-34">tock?</label>
@@ -390,21 +398,21 @@ steps = steps + 1</label>
 	<template>
 		<name>Monitor</name>
 		<declaration>clock c;</declaration>
-		<location id="id21" x="-459" y="-34">
+		<location id="id23" x="-459" y="-34">
 			<label kind="invariant" x="-493" y="-17">c &lt;= 1</label>
 		</location>
-		<init ref="id21"/>
-		<transition id="id22" controllable="false">
-			<source ref="id21"/>
-			<target ref="id21"/>
+		<init ref="id23"/>
+		<transition id="id24" controllable="false">
+			<source ref="id23"/>
+			<target ref="id23"/>
 			<label kind="guard" x="-484" y="17">c &gt;= 1</label>
 			<label kind="assignment" x="-484" y="34">c = 0</label>
 			<nail x="-484" y="17"/>
 			<nail x="-433" y="17"/>
 		</transition>
-		<transition id="id23" controllable="false">
-			<source ref="id21"/>
-			<target ref="id21"/>
+		<transition id="id25" controllable="false">
+			<source ref="id23"/>
+			<target ref="id23"/>
 			<label kind="guard" x="-671" y="-93">x2 &gt; V_max &amp;&amp;
 c &gt;= 1</label>
 			<label kind="assignment" x="-671" y="-51">number_deaths += 1,
@@ -413,9 +421,9 @@ c = 0</label>
 			<nail x="-518" y="-34"/>
 			<nail x="-518" y="-76"/>
 		</transition>
-		<transition id="id24" controllable="false">
-			<source ref="id21"/>
-			<target ref="id21"/>
+		<transition id="id26" controllable="false">
+			<source ref="id23"/>
+			<target ref="id23"/>
 			<label kind="guard" x="-510" y="-203">x2 &lt; V_min &amp;&amp; 
 c &gt;= 1</label>
 			<label kind="assignment" x="-510" y="-161">number_deaths += 1,
@@ -424,9 +432,9 @@ c = 0</label>
 			<nail x="-416" y="-76"/>
 			<nail x="-493" y="-76"/>
 		</transition>
-		<transition id="id25" controllable="false">
-			<source ref="id21"/>
-			<target ref="id21"/>
+		<transition id="id27" controllable="false">
+			<source ref="id23"/>
+			<target ref="id23"/>
 			<label kind="guard" x="-391" y="-93">x1 &gt; I_max &amp;&amp;
 c &gt;= 1</label>
 			<label kind="assignment" x="-390" y="-51">number_deaths += 1,
@@ -439,21 +447,21 @@ c = 0</label>
 	<template>
 		<name>Timer</name>
 		<declaration>clock x;</declaration>
-		<location id="id26" x="25" y="0">
+		<location id="id28" x="25" y="0">
 			<label kind="invariant" x="15" y="17">x&lt;=1</label>
 		</location>
-		<location id="id27" x="-76" y="-85">
+		<location id="id29" x="-76" y="-85">
 			<urgent/>
 		</location>
-		<init ref="id26"/>
-		<transition id="id28" controllable="false">
-			<source ref="id27"/>
-			<target ref="id26"/>
+		<init ref="id28"/>
+		<transition id="id30" controllable="false">
+			<source ref="id29"/>
+			<target ref="id28"/>
 			<label kind="synchronisation" x="-76" y="-42">tock!</label>
 		</transition>
-		<transition id="id29" controllable="false">
-			<source ref="id26"/>
-			<target ref="id27"/>
+		<transition id="id31" controllable="false">
+			<source ref="id28"/>
+			<target ref="id29"/>
 			<label kind="guard" x="0" y="-119">x&gt;=1</label>
 			<label kind="synchronisation" x="0" y="-102">tick!</label>
 			<label kind="assignment" x="0" y="-85">x=0</label>
@@ -462,25 +470,25 @@ c = 0</label>
 	</template>
 	<template>
 		<name>Load</name>
-		<location id="id30" x="-34" y="17">
+		<location id="id32" x="-34" y="17">
 			<label kind="invariant" x="-68" y="-17">x_R'==0</label>
 		</location>
-		<location id="id31" x="59" y="17">
+		<location id="id33" x="59" y="17">
 			<committed/>
 		</location>
-		<init ref="id30"/>
-		<transition id="id32" controllable="false">
-			<source ref="id31"/>
-			<target ref="id30"/>
+		<init ref="id32"/>
+		<transition id="id34" controllable="false">
+			<source ref="id33"/>
+			<target ref="id32"/>
 			<label kind="assignment" x="-34" y="59">x_R = 
   R_min &gt;? 
   x_R - R_fluctuation + random(2*R_fluctuation) 
   &lt;? R_max</label>
 			<nail x="59" y="93"/>
 		</transition>
-		<transition id="id33" controllable="false">
-			<source ref="id30"/>
-			<target ref="id31"/>
+		<transition id="id35" controllable="false">
+			<source ref="id32"/>
+			<target ref="id33"/>
 			<label kind="synchronisation" x="-42" y="42">tick?</label>
 		</transition>
 	</template>
