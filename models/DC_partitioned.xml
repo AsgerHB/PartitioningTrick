@@ -28,8 +28,8 @@ int number_deaths;
 
 // Consupmtion. The output resistance fluctuates every microsecond.
 const double R_fluctuation = 5;
-const int R_min = 30;
-const int R_max = 90;
+const double R_min = 30;
+const double R_max = 90;
 
 
 const double x_L = 450e-6;  // capacitor
