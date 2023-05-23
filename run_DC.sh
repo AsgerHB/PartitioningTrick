@@ -1,9 +1,9 @@
 #!/bin/bash
 
 export NAME=DC
-export UPPAAL=uppaal-533581a/
+export UPPAAL=uppaal-rqvar/
 
-for RUNS in 500000 ; do # 5000 10000 25000 50000 100000 250000 500000 ; do
+for RUNS in 50000 ; do # 5000 10000 25000 50000 100000 250000 500000 ; do
     export RUNS=$RUNS
     for NGRID in $(seq 15 15 1500) ; do 
         export GRID_I=$NGRID
