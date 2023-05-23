@@ -835,7 +835,7 @@ For the DC-DC converter, the voltage furthest from the 15V target is picked.
 The remaining state variables are the current and the consumption.
 These are picked on the assumption that a higher current will lead to a higher voltage in the next step,
 while a higher consumption will cause the voltage to drop.
-The $\alphamean$ is set to pick the center of the region, while $\alphaimax$ is picked analogously to $\alphaimin$
+The $\alphamean$ adversary selects a state uniformly at random within the region, while $\alphaimax$ is picked analogously to $\alphaimin$
 for the two cases.
 
 \begin{figure}[t]
